@@ -297,14 +297,14 @@ scene.add(group);
 
 // ================= LAYOUT =================
 
-const fan1 = createCT(-90,-70);
-const fan2 = createCT(-55,-70);
+const fan1 = createCT(-140,-70);
+const fan2 = createCT(-90,-70);
 
-[-95,-80,-65].forEach(x => createPump(x,-10));
+[-120,-100,-80].forEach(x => createPump(x,-10));
 createChiller(0,-20);
-createChiller(0,-60);
-[50,65,80].forEach(x => createPump(x,-10));
-createAHU(140,-40);
+createChiller(0,-70);
+[90,120,150].forEach(x => createPump(x,-40));
+createAHU(160,-60);
 
 // ================= SYSTEM =================
 let systemOn = false;
