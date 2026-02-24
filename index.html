@@ -2,76 +2,57 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>Chiller Plant – Final Logic</title>
+<title>3D Chiller Plant</title>
 
 <style>
 body{
     margin:0;
-    background:#0f172a;
+    background:#e5e7eb;
     font-family:Arial;
-    color:white;
-    overflow:hidden;
 }
 
-.panel{
+/* ====== COMMON ====== */
+
+.plant{
+    position:relative;
+    width:1400px;
+    height:800px;
+    margin:auto;
+}
+
+.unit{
     position:absolute;
-    top:15px;
-    left:50%;
-    transform:translateX(-50%);
-    display:flex;
-    gap:20px;
-    align-items:center;
+    transform:skewX(-10deg);
+    transition:0.3s;
 }
 
-button{
-    padding:8px 15px;
-    font-size:15px;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
+.base{
+    background:#cbd5e1;
+    border-radius:8px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.2);
 }
 
-.start{ background:#16a34a; color:white;}
-.stop{ background:#dc2626; color:white;}
-.temp-btn{ width:35px; }
-
-svg{ width:100vw; height:100vh; }
-
-.equip{
-    fill:#334155;
-    stroke:#999;
-    stroke-width:2;
-}
-
+/* RUN EFFECT */
 .run{
-    fill:#22c55e;
+    filter:brightness(1.2);
+    transform:skewX(-10deg) scale(1.05);
 }
 
-.text{
-    fill:white;
-    font-size:13px;
-    text-anchor:middle;
+/* ====== CT ====== */
+
+.ct{
+    width:200px;
+    height:150px;
+    background:linear-gradient(#d1d5db,#9ca3af);
+    border-radius:10px;
 }
 
-/* Pipes */
-.pipe{
-    stroke-width:6;
-    fill:none;
-    stroke-dasharray:10;
-    stroke-dashoffset:1000;
-}
-
-.pipe.run{
-    animation:flow 5s linear infinite;
-}
-
-@keyframes flow{
-    to{ stroke-dashoffset:0; }
-}
-
-/* Fan */
 .fan{
-    transform-origin:120px 90px;
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    background:radial-gradient(#111,#555);
+    margin:20px auto;
 }
 
 .spin{
@@ -82,157 +63,108 @@ svg{ width:100vw; height:100vh; }
     from{ transform:rotate(0deg);}
     to{ transform:rotate(360deg);}
 }
+
+/* ====== CHILLER ====== */
+
+.chiller{
+    width:350px;
+    height:80px;
+    background:linear-gradient(to right,#e5e7eb,#9ca3af);
+    border-radius:40px;
+}
+
+/* ====== PUMPS ====== */
+
+.pump{
+    width:80px;
+    height:80px;
+    background:linear-gradient(#64748b,#334155);
+    border-radius:10px;
+}
+
+/* LABEL */
+.label{
+    text-align:center;
+    font-weight:bold;
+    margin-top:5px;
+}
+
 </style>
 </head>
 
 <body>
 
-<div class="panel">
-    <button class="start" onclick="startSystem()">START</button>
-    <button class="stop" onclick="stopSystem()">STOP</button>
+<div class="plant">
 
-    <button class="temp-btn" onclick="changeTemp(-1)">-</button>
-    <div id="tempDisplay">55°F</div>
-    <button class="temp-btn" onclick="changeTemp(1)">+</button>
+    <!-- CT -->
+    <div class="unit" style="top:80px; left:100px;">
+        <div id="CT1" class="ct">
+            <div id="fan1" class="fan"></div>
+        </div>
+        <div class="label">CT1</div>
+    </div>
+
+    <div class="unit" style="top:80px; left:330px;">
+        <div id="CT2" class="ct">
+            <div id="fan2" class="fan"></div>
+        </div>
+        <div class="label">CT2</div>
+    </div>
+
+    <!-- CDP -->
+    <div class="unit" style="top:350px; left:100px;">
+        <div id="CDP1" class="pump"></div>
+        <div class="label">CDP1</div>
+    </div>
+
+    <div class="unit" style="top:350px; left:200px;">
+        <div id="CDP2" class="pump"></div>
+        <div class="label">CDP2</div>
+    </div>
+
+    <div class="unit" style="top:350px; left:300px;">
+        <div id="CDP3" class="pump"></div>
+        <div class="label">CDP3</div>
+    </div>
+
+    <!-- CHILLERS -->
+    <div class="unit" style="top:250px; left:550px;">
+        <div id="CH1" class="chiller"></div>
+        <div class="label">Chiller 1</div>
+    </div>
+
+    <div class="unit" style="top:150px; left:550px;">
+        <div id="CH2" class="chiller"></div>
+        <div class="label">Chiller 2</div>
+    </div>
+
+    <!-- CHP -->
+    <div class="unit" style="top:350px; left:950px;">
+        <div id="CHP1" class="pump"></div>
+        <div class="label">CHP1</div>
+    </div>
+
+    <div class="unit" style="top:350px; left:1050px;">
+        <div id="CHP2" class="pump"></div>
+        <div class="label">CHP2</div>
+    </div>
+
+    <div class="unit" style="top:350px; left:1150px;">
+        <div id="CHP3" class="pump"></div>
+        <div class="label">CHP3</div>
+    </div>
+
 </div>
-
-<svg>
-
-<!-- CT -->
-<rect id="CT1" x="80" y="120" width="80" height="60" class="equip"/>
-<rect id="CT2" x="180" y="120" width="80" height="60" class="equip"/>
-<text x="120" y="115" class="text">CT1</text>
-<text x="220" y="115" class="text">CT2</text>
-
-<circle cx="120" cy="90" r="20" fill="#94a3b8"/>
-<rect id="fan1" x="115" y="70" width="10" height="40" fill="white" class="fan"/>
-
-<circle cx="220" cy="90" r="20" fill="#94a3b8"/>
-<rect id="fan2" x="215" y="70" width="10" height="40" fill="white" class="fan"/>
-
-<!-- CDP -->
-<rect id="CDP1" x="80" y="250" width="50" height="50" class="equip"/>
-<rect id="CDP2" x="150" y="250" width="50" height="50" class="equip"/>
-<rect id="CDP3" x="220" y="250" width="50" height="50" class="equip"/>
-
-<!-- CH -->
-<rect id="CH1" x="420" y="170" width="100" height="60" class="equip"/>
-<rect id="CH2" x="550" y="170" width="100" height="60" class="equip"/>
-
-<!-- CHP -->
-<rect id="CHP1" x="750" y="250" width="50" height="50" class="equip"/>
-<rect id="CHP2" x="820" y="250" width="50" height="50" class="equip"/>
-<rect id="CHP3" x="890" y="250" width="50" height="50" class="equip"/>
-
-<!-- Pipes -->
-<path id="pipe1" d="M120 180 L120 250" class="pipe yellow" stroke="yellow"/>
-<path id="pipe2" d="M470 200 L750 275" class="pipe blue" stroke="deepskyblue"/>
-
-</svg>
 
 <script>
 
-let temp = 55;
-let running = false;
-let chRunning = [];
-let delayTimer;
-
-function rand(arr){
-    return arr[Math.floor(Math.random()*arr.length)];
-}
-
-function clearAll(){
-    document.querySelectorAll(".equip").forEach(e=>e.classList.remove("run"));
-    document.getElementById("fan1").classList.remove("spin");
-    document.getElementById("fan2").classList.remove("spin");
-}
-
-async function startSystem(){
-    if(running) return;
-    running = true;
-
-    // STEP 1: CHP + CDP
-    let cdp = rand(["CDP1","CDP2","CDP3"]);
-    let chp = rand(["CHP1","CHP2","CHP3"]);
-    document.getElementById(cdp).classList.add("run");
-    document.getElementById(chp).classList.add("run");
-
-    await new Promise(r=>setTimeout(r,5000));
-    if(!running) return;
-
-    // STEP 2: CT
-    let ct = rand(["CT1","CT2"]);
-    document.getElementById(ct).classList.add("run");
-    document.getElementById(ct==="CT1"?"fan1":"fan2").classList.add("spin");
-
-    await new Promise(r=>setTimeout(r,5000));
-    if(!running) return;
-
-    // STEP 3: CH
-    runOneCH();
-}
-
-async function stopSystem(){
-    running = false;
-
-    // STEP 1: CH OFF
-    chRunning.forEach(id=>document.getElementById(id).classList.remove("run"));
-    chRunning=[];
-
-    await new Promise(r=>setTimeout(r,5000));
-
-    // STEP 2: CT OFF
-    ["CT1","CT2"].forEach(id=>document.getElementById(id).classList.remove("run"));
-    document.getElementById("fan1").classList.remove("spin");
-    document.getElementById("fan2").classList.remove("spin");
-
-    await new Promise(r=>setTimeout(r,5000));
-
-    // STEP 3: CHP + CDP OFF
-    ["CDP1","CDP2","CDP3","CHP1","CHP2","CHP3"].forEach(id=>
-        document.getElementById(id).classList.remove("run")
-    );
-}
-
-function runOneCH(){
-    let ch = rand(["CH1","CH2"]);
-    chRunning=[ch];
-    document.getElementById(ch).classList.add("run");
-}
-
-function runTwoCH(){
-    chRunning=["CH1","CH2"];
-    chRunning.forEach(id=>document.getElementById(id).classList.add("run"));
-}
-
-function changeTemp(v){
-    temp+=v;
-    document.getElementById("tempDisplay").innerText=temp+"°F";
-
-    if(!running) return;
-
-    clearTimeout(delayTimer);
-
-    if(temp>80){
-        delayTimer=setTimeout(()=>{
-            chRunning.forEach(id=>document.getElementById(id).classList.remove("run"));
-            runTwoCH();
-        },5000);
-    }
-    else if(temp<41){
-        delayTimer=setTimeout(()=>{
-            chRunning.forEach(id=>document.getElementById(id).classList.remove("run"));
-            chRunning=[];
-        },5000);
-    }
-    else{
-        delayTimer=setTimeout(()=>{
-            chRunning.forEach(id=>document.getElementById(id).classList.remove("run"));
-            runOneCH();
-        },5000);
-    }
+/* DEMO RUN */
+function demo(){
+    document.getElementById("CT1").classList.add("run");
+    document.getElementById("fan1").classList.add("spin");
 }
 
 </script>
+
 </body>
 </html>
