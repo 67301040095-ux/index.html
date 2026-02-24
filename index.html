@@ -191,70 +191,80 @@ scene.add(group);
 }
 
 // ================= PUMP =================
-function createPump(x,z){
+unction createPump(x,z){
 
 const group = new THREE.Group();
 
-// ===== Base =====
+// ===== BASE FRAME =====
 const base = new THREE.Mesh(
-  new THREE.BoxGeometry(30,2,16),
-  metalMat
+  new THREE.BoxGeometry(34,3,18),
+  darkMat
 );
-base.position.y = 1;
+base.position.y = 1.5;
 group.add(base);
 
-// ===== Volute Casing (โข่ง) =====
+// ===== PUMP VOLUTE =====
 const volute = new THREE.Mesh(
-  new THREE.CylinderGeometry(7,7,6,32),
+  new THREE.CylinderGeometry(6,6,8,32),
   whiteMat
 );
 volute.rotation.z = Math.PI/2;
-volute.position.set(-6,9,0);
+volute.position.set(-6,10,0);
 group.add(volute);
 
-// ===== Suction (หน้าตรงเข้าโข่ง) =====
+// ===== SUCTION (Front) =====
 const suction = new THREE.Mesh(
   new THREE.CylinderGeometry(3,3,10,32),
   metalMat
 );
 suction.rotation.z = Math.PI/2;
-suction.position.set(-15,9,0);
+suction.position.set(-16,10,0);
 group.add(suction);
 
-// ===== Discharge (ออกบน) =====
+// ===== DISCHARGE (Top) =====
 const discharge = new THREE.Mesh(
   new THREE.CylinderGeometry(3,3,10,32),
   metalMat
 );
-discharge.position.set(-6,16,0);
+discharge.position.set(-6,18,0);
 group.add(discharge);
 
-// ===== Shaft =====
-const shaft = new THREE.Mesh(
-  new THREE.CylinderGeometry(2,2,8,32),
+// ===== COUPLING =====
+const coupling = new THREE.Mesh(
+  new THREE.CylinderGeometry(3,3,4,32),
   darkMat
 );
-shaft.rotation.z = Math.PI/2;
-shaft.position.set(2,9,0);
-group.add(shaft);
+coupling.rotation.z = Math.PI/2;
+coupling.position.set(3,10,0);
+group.add(coupling);
 
-// ===== Motor Body =====
+// ===== MOTOR BODY =====
 const motor = new THREE.Mesh(
   new THREE.CylinderGeometry(5,5,18,32),
   accentMat
 );
 motor.rotation.z = Math.PI/2;
-motor.position.set(14,9,0);
+motor.position.set(15,10,0);
 group.add(motor);
 
-// ===== Motor End Cap =====
+// ===== MOTOR END CAP =====
 const cap = new THREE.Mesh(
   new THREE.CylinderGeometry(5,5,2,32),
   darkMat
 );
 cap.rotation.z = Math.PI/2;
-cap.position.set(23,9,0);
+cap.position.set(24,10,0);
 group.add(cap);
+
+// ===== MOTOR FINS (ให้ดูเหมือนภาพจริง) =====
+for(let i=-6;i<=6;i+=3){
+  const fin = new THREE.Mesh(
+    new THREE.BoxGeometry(1,8,14),
+    darkMat
+  );
+  fin.position.set(15+i,10,0);
+  group.add(fin);
+}
 
 group.position.set(x,0,z);
 scene.add(group);
