@@ -2,9 +2,9 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Chiller Plant 3D</title>
+<title>Modern Chiller Plant 3D</title>
 <style>
-body { margin:0; overflow:hidden; background:#111; }
+body { margin:0; overflow:hidden; background:#f4f6f8; }
 button{
   position:fixed;
   top:20px;
@@ -28,49 +28,58 @@ button{
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(
-  60,
-  window.innerWidth/window.innerHeight,
-  0.1,
-  2000
+60,
+window.innerWidth/window.innerHeight,
+0.1,
+2000
 );
-camera.position.set(140,90,180);
+camera.position.set(160,90,200);
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setSize(window.innerWidth,window.innerHeight);
 renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
+const controls = new THREE.OrbitControls(camera,renderer.domElement);
+controls.enableDamping = true;
 
 // ================= LIGHT =================
-scene.add(new THREE.AmbientLight(0x666666));
+scene.add(new THREE.AmbientLight(0xffffff,0.6));
 
-const light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(100,150,100);
-light.castShadow = true;
-scene.add(light);
+const dirLight = new THREE.DirectionalLight(0xffffff,0.8);
+dirLight.position.set(200,200,100);
+dirLight.castShadow = true;
+scene.add(dirLight);
 
 // ================= MATERIAL =================
-const metal = new THREE.MeshStandardMaterial({
-  color:0xbfbfbf,
-  metalness:0.8,
-  roughness:0.4
+const whiteMat = new THREE.MeshStandardMaterial({
+color:0xfafafa,
+metalness:0.3,
+roughness:0.4
 });
 
-const green = new THREE.MeshStandardMaterial({
-  color:0x1faa59,
-  metalness:0.6,
-  roughness:0.4
+const metalMat = new THREE.MeshStandardMaterial({
+color:0xd0d5db,
+metalness:0.8,
+roughness:0.3
 });
 
-const blue = new THREE.MeshStandardMaterial({
-  color:0x3355ff
+const darkMat = new THREE.MeshStandardMaterial({
+color:0x555b66,
+metalness:0.7,
+roughness:0.4
+});
+
+const accentMat = new THREE.MeshStandardMaterial({
+color:0x2d6cdf,
+metalness:0.6,
+roughness:0.3
 });
 
 // ================= GROUND =================
 const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(400,400),
-  new THREE.MeshStandardMaterial({color:0x222222})
+new THREE.PlaneGeometry(500,500),
+new THREE.MeshStandardMaterial({color:0xffffff})
 );
 ground.rotation.x = -Math.PI/2;
 ground.receiveShadow = true;
@@ -79,131 +88,209 @@ scene.add(ground);
 // ================= COOLING TOWER =================
 function createCT(x,z){
 
-  const group = new THREE.Group();
+const group = new THREE.Group();
 
-  const base = new THREE.Mesh(
-    new THREE.BoxGeometry(22,5,22),
-    metal
-  );
-  base.position.y = 2.5;
-  group.add(base);
+// base frame
+const base = new THREE.Mesh(
+new THREE.BoxGeometry(26,4,26),
+metalMat
+);
+base.position.y = 2;
+group.add(base);
 
-  const body = new THREE.Mesh(
-    new THREE.BoxGeometry(18,30,18),
-    metal
-  );
-  body.position.y = 20;
-  group.add(body);
+// main body
+const body = new THREE.Mesh(
+new THREE.BoxGeometry(22,34,22),
+whiteMat
+);
+body.position.y = 20;
+group.add(body);
 
-  const deck = new THREE.Mesh(
-    new THREE.BoxGeometry(18,3,18),
-    new THREE.MeshStandardMaterial({color:0x777777})
-  );
-  deck.position.y = 36;
-  group.add(deck);
+// panel lines
+for(let i=-8;i<=8;i+=4){
+const line = new THREE.Mesh(
+new THREE.BoxGeometry(22,0.4,0.6),
+metalMat
+);
+line.position.set(0,18+i,11.3);
+group.add(line);
+}
 
-  const fan = new THREE.Mesh(
-    new THREE.CylinderGeometry(7,7,2,32),
-    new THREE.MeshStandardMaterial({color:0x333333})
-  );
-  fan.rotation.x = Math.PI/2;
-  fan.position.y = 38;
-  group.add(fan);
+// fan deck
+const deck = new THREE.Mesh(
+new THREE.BoxGeometry(22,2,22),
+metalMat
+);
+deck.position.y = 38;
+group.add(deck);
 
-  group.position.set(x,0,z);
-  scene.add(group);
+// fan guard
+const guard = new THREE.Mesh(
+new THREE.TorusGeometry(8,0.3,16,60),
+darkMat
+);
+guard.rotation.x = Math.PI/2;
+guard.position.y = 40;
+group.add(guard);
 
-  return fan;
+// fan blade
+const fan = new THREE.Mesh(
+new THREE.CylinderGeometry(7,7,1.5,40),
+darkMat
+);
+fan.rotation.x = Math.PI/2;
+fan.position.y = 40;
+group.add(fan);
+
+group.position.set(x,0,z);
+scene.add(group);
+
+return fan;
 }
 
 // ================= CHILLER =================
 function createChiller(x,z){
-  const body = new THREE.Mesh(
-    new THREE.CylinderGeometry(5,5,40,32),
-    green
-  );
-  body.rotation.z = Math.PI/2;
-  body.position.set(x,10,z);
-  scene.add(body);
+
+const group = new THREE.Group();
+
+// condenser barrel
+const barrel1 = new THREE.Mesh(
+new THREE.CylinderGeometry(6,6,50,32),
+whiteMat
+);
+barrel1.rotation.z = Math.PI/2;
+barrel1.position.y = 12;
+group.add(barrel1);
+
+// evaporator barrel
+const barrel2 = barrel1.clone();
+barrel2.position.y = 22;
+group.add(barrel2);
+
+// saddle supports
+for(let i=-15;i<=15;i+=30){
+const saddle = new THREE.Mesh(
+new THREE.BoxGeometry(6,4,6),
+metalMat
+);
+saddle.position.set(i,6,0);
+group.add(saddle);
+}
+
+// control panel
+const panel = new THREE.Mesh(
+new THREE.BoxGeometry(6,12,4),
+accentMat
+);
+panel.position.set(-28,14,0);
+group.add(panel);
+
+group.position.set(x,0,z);
+scene.add(group);
 }
 
 // ================= PUMP =================
 function createPump(x,z){
-  const base = new THREE.Mesh(
-    new THREE.BoxGeometry(8,3,6),
-    metal
-  );
-  base.position.set(x,1.5,z);
-  scene.add(base);
 
-  const motor = new THREE.Mesh(
-    new THREE.CylinderGeometry(3,3,10,32),
-    blue
-  );
-  motor.rotation.z = Math.PI/2;
-  motor.position.set(x,6,z);
-  scene.add(motor);
+const group = new THREE.Group();
+
+// base frame
+const base = new THREE.Mesh(
+new THREE.BoxGeometry(16,3,8),
+metalMat
+);
+base.position.y = 1.5;
+group.add(base);
+
+// casing
+const casing = new THREE.Mesh(
+new THREE.SphereGeometry(4,32,32),
+whiteMat
+);
+casing.position.set(-2,6,0);
+group.add(casing);
+
+// motor
+const motor = new THREE.Mesh(
+new THREE.CylinderGeometry(3,3,14,32),
+accentMat
+);
+motor.rotation.z = Math.PI/2;
+motor.position.set(6,6,0);
+group.add(motor);
+
+group.position.set(x,0,z);
+scene.add(group);
 }
 
 // ================= AHU =================
 function createAHU(x,z){
-  const ahu = new THREE.Mesh(
-    new THREE.BoxGeometry(40,15,15),
-    metal
-  );
-  ahu.position.set(x,8,z);
-  scene.add(ahu);
+
+const group = new THREE.Group();
+
+const body = new THREE.Mesh(
+new THREE.BoxGeometry(50,18,18),
+whiteMat
+);
+body.position.y = 10;
+group.add(body);
+
+// panel lines
+for(let i=-20;i<=20;i+=10){
+const line = new THREE.Mesh(
+new THREE.BoxGeometry(0.5,18,18),
+metalMat
+);
+line.position.set(i,10,0);
+group.add(line);
+}
+
+group.position.set(x,0,z);
+scene.add(group);
 }
 
 // ================= LAYOUT =================
 
-// CT Zone (หลังซ้าย)
 const fan1 = createCT(-90,-60);
-const fan2 = createCT(-60,-60);
+const fan2 = createCT(-55,-60);
 
-// CDP Zone (หน้า CT)
 [-95,-80,-65].forEach(x => createPump(x,-10));
-
-// Chiller Zone (กลาง)
 createChiller(0,-20);
 createChiller(0,-60);
-
-// CHP Zone (ขวา)
 [50,65,80].forEach(x => createPump(x,-10));
+createAHU(130,-40);
 
-// AHU (ขวาหลัง)
-createAHU(120,-40);
-
-// ================= SYSTEM LOGIC =================
+// ================= SYSTEM =================
 let systemOn = false;
 let fanSpeed = 0;
 
 function startSystem(){
-  setTimeout(()=>{
-    systemOn = true;
-  },2000);
+setTimeout(()=>{
+systemOn = true;
+},2000);
 }
 
 // ================= ANIMATION =================
 function animate(){
-  requestAnimationFrame(animate);
+requestAnimationFrame(animate);
 
-  if(systemOn){
-    fanSpeed = 0.05;
-  }
+if(systemOn){
+fanSpeed = 0.08;
+}
 
-  fan1.rotation.z += fanSpeed;
-  fan2.rotation.z += fanSpeed;
+fan1.rotation.z += fanSpeed;
+fan2.rotation.z += fanSpeed;
 
-  renderer.render(scene,camera);
+controls.update();
+renderer.render(scene,camera);
 }
 animate();
 
-// ================= RESIZE =================
+// resize
 window.addEventListener("resize",()=>{
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth,window.innerHeight);
+camera.aspect = window.innerWidth/window.innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(window.innerWidth,window.innerHeight);
 });
 
 </script>
