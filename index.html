@@ -2,22 +2,31 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Chiller Plant 3D Pro</title>
+<title>Chiller Plant 3D System</title>
 <style>
-body { margin:0; overflow:hidden; }
+body { margin:0; overflow:hidden; background:#f5f5f5; }
+button {
+  position:fixed;
+  top:20px;
+  left:20px;
+  padding:10px 20px;
+  font-size:16px;
+  z-index:10;
+}
 </style>
 </head>
 <body>
+
+<button onclick="startSystem()">START SYSTEM</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
 
 <script>
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xf5f5f5);
 
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
-camera.position.set(40,30,50);
+camera.position.set(60,40,80);
 
 const renderer = new THREE.WebGLRenderer({ antialias:true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -26,144 +35,119 @@ document.body.appendChild(renderer.domElement);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-const light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(50,50,30);
-light.castShadow = true;
-scene.add(light);
 scene.add(new THREE.AmbientLight(0x888888));
+const light = new THREE.DirectionalLight(0xffffff,1);
+light.position.set(50,80,40);
+scene.add(light);
 
-// ===== Floor =====
-const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(200,200),
-  new THREE.MeshStandardMaterial({color:0xffffff})
-);
-floor.rotation.x = -Math.PI/2;
-floor.receiveShadow = true;
-scene.add(floor);
+// ===== MATERIAL =====
+const metal = new THREE.MeshStandardMaterial({color:0xcccccc, metalness:0.8, roughness:0.3});
+const green = new THREE.MeshStandardMaterial({color:0x1faa59, metalness:0.5, roughness:0.4});
+const blue = new THREE.MeshStandardMaterial({color:0x3344aa});
 
-// ===== Materials =====
-const metalMat = new THREE.MeshStandardMaterial({
-  color:0xcccccc,
-  metalness:0.8,
-  roughness:0.3
-});
-
-const pumpMat = new THREE.MeshStandardMaterial({
-  color:0x333366,
-  metalness:0.5,
-  roughness:0.6
-});
-
-// ===== Cooling Tower =====
+// ===== COOLING TOWER =====
 function createCT(x,z){
   const group = new THREE.Group();
 
-  const body = new THREE.Mesh(
-    new THREE.BoxGeometry(8,6,8),
-    metalMat
-  );
-  body.position.y = 3;
-  body.castShadow = true;
+  const body = new THREE.Mesh(new THREE.BoxGeometry(12,10,12), metal);
+  body.position.y = 5;
   group.add(body);
 
   const fan = new THREE.Mesh(
-    new THREE.CylinderGeometry(3,3,0.5,32),
+    new THREE.CylinderGeometry(4,4,1,32),
     new THREE.MeshStandardMaterial({color:0x555555})
   );
-  fan.position.y = 6.2;
   fan.rotation.x = Math.PI/2;
+  fan.position.y = 10.5;
   group.add(fan);
 
   group.position.set(x,0,z);
   scene.add(group);
-
   return fan;
 }
 
-const fan1 = createCT(-30,-10);
-const fan2 = createCT(-18,-10);
+const fan1 = createCT(-40,-10);
+const fan2 = createCT(-22,-10);
 
-// ===== Chiller =====
+// ===== CHILLER =====
 function createChiller(x,z){
-  const chiller = new THREE.Mesh(
-    new THREE.CylinderGeometry(3,3,18,32),
-    new THREE.MeshStandardMaterial({
-      color:0x22aa66,
-      metalness:0.7,
-      roughness:0.4
-    })
+  const ch = new THREE.Mesh(
+    new THREE.CylinderGeometry(4,4,30,32),
+    green
   );
-  chiller.rotation.z = Math.PI/2;
-  chiller.position.set(x,4,z);
-  chiller.castShadow = true;
-  scene.add(chiller);
+  ch.rotation.z = Math.PI/2;
+  ch.position.set(x,6,z);
+  scene.add(ch);
 }
 createChiller(0,-5);
-createChiller(0,-20);
+createChiller(0,-25);
 
-// ===== Pump =====
+// ===== PUMPS =====
 function createPump(x,z){
-  const base = new THREE.Mesh(
-    new THREE.BoxGeometry(3,1,3),
-    metalMat
-  );
-  base.position.set(x,0.5,z);
-  base.castShadow = true;
+  const base = new THREE.Mesh(new THREE.BoxGeometry(6,2,6), metal);
+  base.position.set(x,1,z);
   scene.add(base);
 
-  const motor = new THREE.Mesh(
-    new THREE.CylinderGeometry(1.5,1.5,3,32),
-    pumpMat
-  );
-  motor.position.set(x,2.5,z);
-  motor.castShadow = true;
+  const motor = new THREE.Mesh(new THREE.CylinderGeometry(2,2,6,32), blue);
+  motor.position.set(x,5,z);
   scene.add(motor);
 }
 
-createPump(-30,-25);
-createPump(-22,-25);
-createPump(-14,-25);
-
-createPump(15,-25);
-createPump(23,-25);
-createPump(31,-25);
+[-40,-28,-16].forEach(x => createPump(x,-35)); // CDP
+[20,32,44].forEach(x => createPump(x,-35));    // CHP
 
 // ===== AHU =====
 function createAHU(x,z){
-  const ahu = new THREE.Mesh(
-    new THREE.BoxGeometry(14,5,6),
-    metalMat
-  );
-  ahu.position.set(x,2.5,z);
-  ahu.castShadow = true;
+  const ahu = new THREE.Mesh(new THREE.BoxGeometry(30,10,10), metal);
+  ahu.position.set(x,5,z);
   scene.add(ahu);
 }
-createAHU(35,-10);
+createAHU(45,-10);
 
-// ===== 3D Pipe =====
-function createPipe(start,end){
-  const curve = new THREE.CatmullRomCurve3([
-    new THREE.Vector3(...start),
-    new THREE.Vector3((start[0]+end[0])/2, 6, start[2]),
-    new THREE.Vector3(...end)
-  ]);
-
-  const geometry = new THREE.TubeGeometry(curve, 20, 0.8, 16, false);
-  const material = new THREE.MeshStandardMaterial({color:0xff9900});
+// ===== PIPE FUNCTION =====
+function createPipe(points,color){
+  const curve = new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(...p)));
+  const geometry = new THREE.TubeGeometry(curve, 40, 1.2, 16, false);
+  const material = new THREE.MeshStandardMaterial({color:color});
   const pipe = new THREE.Mesh(geometry, material);
-  pipe.castShadow = true;
   scene.add(pipe);
+  return pipe;
 }
 
-createPipe([-26,6,-10],[0,6,-5]);
-createPipe([0,6,-5],[35,6,-10]);
+// Condenser loop
+const condPipe = createPipe([
+  [-34,10,-10],
+  [-34,15,-5],
+  [0,15,-5],
+  [0,10,-5]
+], 0xff9900);
 
-// ===== Animation =====
+// Chilled loop
+const chilPipe = createPipe([
+  [0,6,-25],
+  [30,12,-15],
+  [45,10,-10]
+], 0x0099ff);
+
+// ===== SYSTEM LOGIC =====
+let ctOn = false;
+let fanSpeed = 0;
+
+function startSystem(){
+  // delay sequence
+  setTimeout(()=>{ ctOn = true; },2000);
+}
+
+// ===== ANIMATION =====
 function animate(){
   requestAnimationFrame(animate);
 
-  fan1.rotation.z += 0.05;
-  fan2.rotation.z += 0.05;
+  if(ctOn){
+    fanSpeed = 0.05;
+  }
+
+  fan1.rotation.z += fanSpeed;
+  fan2.rotation.z += fanSpeed;
 
   renderer.render(scene,camera);
 }
@@ -175,6 +159,5 @@ window.addEventListener("resize",()=>{
   renderer.setSize(window.innerWidth,window.innerHeight);
 });
 </script>
-
 </body>
 </html>
