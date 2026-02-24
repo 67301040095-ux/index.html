@@ -171,7 +171,7 @@ group.add(barrel2);
 // saddles
 for(let i=-18;i<=18;i+=36){
 const saddle = new THREE.Mesh(
-new THREE.BoxGeometry(28,4,20),
+new THREE.BoxGeometry(29,4,20),
 metalMat
 );
 saddle.position.set(i,6,0);
@@ -183,7 +183,7 @@ const panel = new THREE.Mesh(
 new THREE.BoxGeometry(6,14,4),
 accentMat
 );
-panel.position.set(-30,45,0);
+panel.position.set(-30,25,5);
 group.add(panel);
 
 group.position.set(x,0,z);
