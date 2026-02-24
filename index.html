@@ -2,120 +2,178 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Chiller Plant Overlay</title>
-
+<title>Chiller Plant 3D Pro</title>
 <style>
-body {
-  margin:0;
-  background:#f0f0f0;
-  font-family:Arial;
-}
-
-.wrapper {
-  position:relative;
-  width:1200px;
-  margin:auto;
-}
-
-.plant-img {
-  width:100%;
-  display:block;
-}
-
-svg {
-  position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  pointer-events:none;
-}
-
-.pipe {
-  stroke-width:8;
-  fill:none;
-  stroke-dasharray:15;
-  animation:none;
-}
-
-.condenser { stroke:#ff9900; }
-.chilled   { stroke:#0099ff; }
-
-.flow {
-  animation: flow 1s linear infinite;
-}
-
-@keyframes flow {
-  from { stroke-dashoffset:0; }
-  to { stroke-dashoffset:-30; }
-}
-
-button {
-  position:fixed;
-  top:20px;
-  left:20px;
-  padding:10px 20px;
-  font-size:16px;
-}
+body { margin:0; overflow:hidden; }
 </style>
 </head>
 <body>
 
-<button onclick="startSystem()">START SYSTEM</button>
-
-<div class="wrapper">
-
-<img src="plant.png" class="plant-img">
-
-<svg viewBox="0 0 1200 700">
-
-  <!-- Condenser Loop -->
-  <path id="condPipe"
-    class="pipe condenser"
-    d="M150 200 L350 200 L350 350 L150 350 Z" />
-
-  <!-- Chilled Loop -->
-  <path id="chilPipe"
-    class="pipe chilled"
-    d="M600 250 L900 250 L900 350 L600 350 Z" />
-
-</svg>
-</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
 
 <script>
-let ctRunning = false;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xf5f5f5);
 
-function startSystem() {
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+camera.position.set(40,30,50);
 
-  // 1. CDP ทำงาน → เปิด condenser flow
-  document.getElementById("condPipe").classList.add("flow");
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
 
-  setTimeout(() => {
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-    // 2. CT ทำงาน → พัดลมหมุน
-    ctRunning = true;
-    rotateFan();
+const light = new THREE.DirectionalLight(0xffffff,1);
+light.position.set(50,50,30);
+light.castShadow = true;
+scene.add(light);
+scene.add(new THREE.AmbientLight(0x888888));
 
-  }, 2000);
+// ===== Floor =====
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(200,200),
+  new THREE.MeshStandardMaterial({color:0xffffff})
+);
+floor.rotation.x = -Math.PI/2;
+floor.receiveShadow = true;
+scene.add(floor);
 
-  setTimeout(() => {
+// ===== Materials =====
+const metalMat = new THREE.MeshStandardMaterial({
+  color:0xcccccc,
+  metalness:0.8,
+  roughness:0.3
+});
 
-    // 3. CHP ทำงาน → เปิด chilled flow
-    document.getElementById("chilPipe").classList.add("flow");
+const pumpMat = new THREE.MeshStandardMaterial({
+  color:0x333366,
+  metalness:0.5,
+  roughness:0.6
+});
 
-  }, 4000);
+// ===== Cooling Tower =====
+function createCT(x,z){
+  const group = new THREE.Group();
 
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(8,6,8),
+    metalMat
+  );
+  body.position.y = 3;
+  body.castShadow = true;
+  group.add(body);
+
+  const fan = new THREE.Mesh(
+    new THREE.CylinderGeometry(3,3,0.5,32),
+    new THREE.MeshStandardMaterial({color:0x555555})
+  );
+  fan.position.y = 6.2;
+  fan.rotation.x = Math.PI/2;
+  group.add(fan);
+
+  group.position.set(x,0,z);
+  scene.add(group);
+
+  return fan;
 }
 
-function rotateFan() {
-  if(!ctRunning) return;
+const fan1 = createCT(-30,-10);
+const fan2 = createCT(-18,-10);
 
-  let angle = 0;
-  setInterval(() => {
-    angle += 55;
-    console.log("Fan rotate:", angle);
-  }, 10000); // 5วิหมุน + 5วิพัก = 10วิ
+// ===== Chiller =====
+function createChiller(x,z){
+  const chiller = new THREE.Mesh(
+    new THREE.CylinderGeometry(3,3,18,32),
+    new THREE.MeshStandardMaterial({
+      color:0x22aa66,
+      metalness:0.7,
+      roughness:0.4
+    })
+  );
+  chiller.rotation.z = Math.PI/2;
+  chiller.position.set(x,4,z);
+  chiller.castShadow = true;
+  scene.add(chiller);
 }
+createChiller(0,-5);
+createChiller(0,-20);
+
+// ===== Pump =====
+function createPump(x,z){
+  const base = new THREE.Mesh(
+    new THREE.BoxGeometry(3,1,3),
+    metalMat
+  );
+  base.position.set(x,0.5,z);
+  base.castShadow = true;
+  scene.add(base);
+
+  const motor = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.5,1.5,3,32),
+    pumpMat
+  );
+  motor.position.set(x,2.5,z);
+  motor.castShadow = true;
+  scene.add(motor);
+}
+
+createPump(-30,-25);
+createPump(-22,-25);
+createPump(-14,-25);
+
+createPump(15,-25);
+createPump(23,-25);
+createPump(31,-25);
+
+// ===== AHU =====
+function createAHU(x,z){
+  const ahu = new THREE.Mesh(
+    new THREE.BoxGeometry(14,5,6),
+    metalMat
+  );
+  ahu.position.set(x,2.5,z);
+  ahu.castShadow = true;
+  scene.add(ahu);
+}
+createAHU(35,-10);
+
+// ===== 3D Pipe =====
+function createPipe(start,end){
+  const curve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(...start),
+    new THREE.Vector3((start[0]+end[0])/2, 6, start[2]),
+    new THREE.Vector3(...end)
+  ]);
+
+  const geometry = new THREE.TubeGeometry(curve, 20, 0.8, 16, false);
+  const material = new THREE.MeshStandardMaterial({color:0xff9900});
+  const pipe = new THREE.Mesh(geometry, material);
+  pipe.castShadow = true;
+  scene.add(pipe);
+}
+
+createPipe([-26,6,-10],[0,6,-5]);
+createPipe([0,6,-5],[35,6,-10]);
+
+// ===== Animation =====
+function animate(){
+  requestAnimationFrame(animate);
+
+  fan1.rotation.z += 0.05;
+  fan2.rotation.z += 0.05;
+
+  renderer.render(scene,camera);
+}
+animate();
+
+window.addEventListener("resize",()=>{
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+});
 </script>
 
 </body>
