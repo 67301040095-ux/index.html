@@ -305,8 +305,8 @@ if(systemOn){
 fanSpeed = 0.1;
 }
 
-fan1.rotation.z += fanSpeed;
-fan2.rotation.z += fanSpeed;
+fan1.rotation.y += fanSpeed;
+fan2.rotation.y += fanSpeed;
 
 controls.update();
 renderer.render(scene,camera);
