@@ -195,65 +195,62 @@ function createPump(x,z){
 
 const group = new THREE.Group();
 
-// ===== Base =====
+// ===== BASE =====
 const base = new THREE.Mesh(
-  new THREE.BoxGeometry(30,2,16),
-  metalMat
+  new THREE.BoxGeometry(22,2,14),
+  darkMat
 );
 base.position.y = 1;
 group.add(base);
 
-// ===== Volute Casing (โข่ง) =====
+// ===== LOWER SHAFT BODY =====
+const lower = new THREE.Mesh(
+  new THREE.BoxGeometry(6,8,6),
+  metalMat
+);
+lower.position.y = 6;
+group.add(lower);
+
+// ===== VOLUTE (โข่ง) =====
 const volute = new THREE.Mesh(
-  new THREE.CylinderGeometry(7,7,6,32),
+  new THREE.CylinderGeometry(6,6,6,32),
   whiteMat
 );
-volute.rotation.z = Math.PI/2;
-volute.position.set(-6,9,0);
+volute.position.y = 11;
 group.add(volute);
 
-// ===== Suction (หน้าตรงเข้าโข่ง) =====
+// ===== SUCTION (Front - จาก CT) =====
 const suction = new THREE.Mesh(
-  new THREE.CylinderGeometry(3,3,10,32),
+  new THREE.CylinderGeometry(2.5,2.5,8,32),
   metalMat
 );
-suction.rotation.z = Math.PI/2;
-suction.position.set(-15,9,0);
+suction.rotation.x = Math.PI/2;
+suction.position.set(0,11,7);
 group.add(suction);
 
-// ===== Discharge (ออกบน) =====
+// ===== DISCHARGE (Back - ไป CH) =====
 const discharge = new THREE.Mesh(
-  new THREE.CylinderGeometry(3,3,10,32),
+  new THREE.CylinderGeometry(2.5,2.5,8,32),
   metalMat
 );
-discharge.position.set(-6,16,0);
+discharge.rotation.x = Math.PI/2;
+discharge.position.set(0,11,-7);
 group.add(discharge);
 
-// ===== Shaft =====
-const shaft = new THREE.Mesh(
-  new THREE.CylinderGeometry(2,2,8,32),
-  darkMat
-);
-shaft.rotation.z = Math.PI/2;
-shaft.position.set(2,9,0);
-group.add(shaft);
-
-// ===== Motor Body =====
+// ===== MOTOR =====
 const motor = new THREE.Mesh(
-  new THREE.CylinderGeometry(5,5,18,32),
+  new THREE.CylinderGeometry(5,5,10,32),
   accentMat
 );
-motor.rotation.z = Math.PI/2;
-motor.position.set(14,9,0);
+motor.position.y = 18;
 group.add(motor);
 
-// ===== Motor End Cap =====
+// ===== MOTOR CAP =====
 const cap = new THREE.Mesh(
   new THREE.CylinderGeometry(5,5,2,32),
   darkMat
 );
-cap.rotation.z = Math.PI/2;
-cap.position.set(23,9,0);
+cap.position.y = 24;
 group.add(cap);
 
 group.position.set(x,0,z);
