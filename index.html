@@ -1,0 +1,163 @@
+
+
+.panel{
+    margin:30px auto;
+    width:600px;
+    background:#1e293b;
+    padding:20px;
+    border-radius:15px;
+    text-align:center;
+}
+
+button{
+    padding:10px 20px;
+    margin:5px;
+    font-size:16px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.start{background:#16a34a;color:white;}
+.stop{background:#dc2626;color:white;}
+.tempBtn{background:#3b82f6;color:white;width:50px;}
+
+.status{
+    margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>CHILLER PLANT SIMULATION</h1>
+
+<div class="plant">
+
+<div class="row">
+    <div class="unit" id="CT1">
+        <div class="label">CT-1</div>
+        <div class="fan" id="fan1"></div>
+    </div>
+    <div class="unit" id="CT2">
+        <div class="label">CT-2</div>
+        <div class="fan" id="fan2"></div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="unit" id="CDP1"><div class="label">CDP-1</div></div>
+    <div class="unit" id="CDP2"><div class="label">CDP-2</div></div>
+    <div class="unit" id="CDP3"><div class="label">CDP-3</div></div>
+</div>
+
+<div class="row">
+    <div class="unit" id="CH1"><div class="label">CH-1</div></div>
+    <div class="unit" id="CH2"><div class="label">CH-2</div></div>
+</div>
+
+<div class="row">
+    <div class="unit" id="CHP1"><div class="label">CHP-1</div></div>
+    <div class="unit" id="CHP2"><div class="label">CHP-2</div></div>
+    <div class="unit" id="CHP3"><div class="label">CHP-3</div></div>
+</div>
+
+<div class="row">
+    <div class="unit"><div class="label">AHU-1</div></div>
+    <div class="unit"><div class="label">AHU-2</div></div>
+</div>
+
+</div>
+
+<div class="panel">
+    <button class="start" onclick="startSystem()">START</button>
+    <button class="stop" onclick="stopSystem()">STOP</button>
+    <br><br>
+    <button class="tempBtn" onclick="changeTemp(-1)">-</button>
+    <span style="font-size:20px;">Return Temp: <span id="tempValue">55</span> °F</span>
+    <button class="tempBtn" onclick="changeTemp(1)">+</button>
+
+    <div class="status" id="statusText"></div>
+</div>
+
+<script>
+
+let running=false;
+let returnTemp=55;
+
+function randomOne(list){
+    return list[Math.floor(Math.random()*list.length)];
+}
+
+function clearUnits(prefix,count){
+    for(let i=1;i<=count;i++){
+        document.getElementById(prefix+i).classList.remove("running");
+    }
+}
+
+function startSystem(){
+    running=true;
+
+    // CDP random
+    clearUnits("CDP",3);
+    let cdp=randomOne([1,2,3]);
+    document.getElementById("CDP"+cdp).classList.add("running");
+
+    // CHP random
+    clearUnits("CHP",3);
+    let chp=randomOne([1,2,3]);
+    document.getElementById("CHP"+chp).classList.add("running");
+
+    // CT random
+    clearUnits("CT",2);
+    document.getElementById("fan1").classList.remove("spin");
+    document.getElementById("fan2").classList.remove("spin");
+
+    let ct=randomOne([1,2]);
+    document.getElementById("CT"+ct).classList.add("running");
+    document.getElementById("fan"+ct).classList.add("spin");
+
+    controlCH();
+}
+
+function stopSystem(){
+    running=false;
+    clearUnits("CDP",3);
+    clearUnits("CHP",3);
+    clearUnits("CT",2);
+    clearUnits("CH",2);
+    document.getElementById("fan1").classList.remove("spin");
+    document.getElementById("fan2").classList.remove("spin");
+    document.getElementById("statusText").innerText="";
+}
+
+function controlCH(){
+    if(!running) return;
+
+    clearUnits("CH",2);
+
+    if(returnTemp>80){
+        document.getElementById("CH1").classList.add("running");
+        document.getElementById("CH2").classList.add("running");
+        document.getElementById("statusText").innerText="High Temp >80°F → 2 CH Running";
+    }
+    else if(returnTemp<41){
+        document.getElementById("statusText").innerText="Low Temp <41°F → CH Shutdown";
+    }
+    else{
+        let ch=randomOne([1,2]);
+        document.getElementById("CH"+ch).classList.add("running");
+        document.getElementById("statusText").innerText="Normal Range → 1 CH Running";
+    }
+}
+
+function changeTemp(value){
+    returnTemp+=value;
+    document.getElementById("tempValue").innerText=returnTemp;
+    controlCH();
+}
+
+</script>
+
+</body>
+</html>
