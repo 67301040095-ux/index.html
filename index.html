@@ -195,45 +195,66 @@ function createPump(x,z){
 
 const group = new THREE.Group();
 
-// base
+// ===== Base Frame =====
 const base = new THREE.Mesh(
-new THREE.BoxGeometry(24,2,10),
-metalMat
+  new THREE.BoxGeometry(26,2,14),
+  metalMat
 );
 base.position.y = 1;
 group.add(base);
 
-// casing
+// ===== Pump Casing (Volute) =====
 const casing = new THREE.Mesh(
-new THREE.CylinderGeometry(5,5,8,32),
-whiteMat
+  new THREE.CylinderGeometry(6,6,8,32),
+  whiteMat
 );
 casing.rotation.z = Math.PI/2;
-casing.position.set(-5,6,0);
+casing.position.set(-5,8,0);
 group.add(casing);
 
-// suction
+// ===== Suction Nozzle (หน้า) =====
 const suction = new THREE.Mesh(
-new THREE.CylinderGeometry(2,2,8,32),
-metalMat
+  new THREE.CylinderGeometry(2.5,2.5,8,32),
+  metalMat
 );
 suction.rotation.z = Math.PI/2;
-suction.position.set(-12,6,0);
+suction.position.set(-13,8,0);
 group.add(suction);
 
-// discharge
-const discharge = suction.clone();
-discharge.position.set(2,6,0);
+// ===== Discharge Nozzle (บน) =====
+const discharge = new THREE.Mesh(
+  new THREE.CylinderGeometry(2.5,2.5,6,32),
+  metalMat
+);
+discharge.position.set(-5,14,0);
 group.add(discharge);
 
-// motor
+// ===== Coupling =====
+const coupling = new THREE.Mesh(
+  new THREE.CylinderGeometry(3,3,4,32),
+  darkMat
+);
+coupling.rotation.z = Math.PI/2;
+coupling.position.set(3,8,0);
+group.add(coupling);
+
+// ===== Motor =====
 const motor = new THREE.Mesh(
-new THREE.CylinderGeometry(3,3,18,32),
-accentMat
+  new THREE.CylinderGeometry(4,4,16,32),
+  accentMat
 );
 motor.rotation.z = Math.PI/2;
-motor.position.set(10,6,0);
+motor.position.set(12,8,0);
 group.add(motor);
+
+// ===== Motor End Cap =====
+const cap = new THREE.Mesh(
+  new THREE.CylinderGeometry(4,4,2,32),
+  darkMat
+);
+cap.rotation.z = Math.PI/2;
+cap.position.set(20,8,0);
+group.add(cap);
 
 group.position.set(x,0,z);
 scene.add(group);
