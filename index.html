@@ -156,7 +156,7 @@ const group = new THREE.Group();
 
 // condenser barrel
 const barrel1 = new THREE.Mesh(
-new THREE.CylinderGeometry(8,10,75,32),
+new THREE.CylinderGeometry(10,10,80,32),
 whiteMat
 );
 barrel1.rotation.z = Math.PI/2;
@@ -171,7 +171,7 @@ group.add(barrel2);
 // saddles
 for(let i=-18;i<=18;i+=36){
 const saddle = new THREE.Mesh(
-new THREE.BoxGeometry(6,4,6),
+new THREE.BoxGeometry(30,6,20),
 metalMat
 );
 saddle.position.set(i,6,0);
