@@ -2,111 +2,190 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>Chiller System Layout</title>
+<title>Chiller HMI</title>
 
 <style>
 body{
     margin:0;
-    background:#f4f6f9;
-    font-family:Arial, sans-serif;
+    background:#0f172a;
+    font-family:Arial;
+    color:white;
+    overflow:hidden;
 }
 
-.container{
+/* TOP PANEL */
+.panel{
+    position:absolute;
+    top:20px;
+    left:50%;
+    transform:translateX(-50%);
     display:flex;
-    justify-content:center;
+    gap:20px;
     align-items:center;
+}
+
+button{
+    padding:10px 18px;
+    font-size:16px;
+    border:none;
+    cursor:pointer;
+    border-radius:6px;
+}
+
+.start{ background:#16a34a; color:white;}
+.stop{ background:#dc2626; color:white;}
+
+.temp-box{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:#1e293b;
+    padding:10px 15px;
+    border-radius:8px;
+}
+
+.temp-btn{
+    width:35px;
+    height:35px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+svg{
+    width:100vw;
     height:100vh;
 }
 
-.box{
-    fill:#dcdcdc;
-    stroke:#333;
-    stroke-width:2;
+/* EQUIPMENT */
+.box{ fill:#dcdcdc; stroke:#333; stroke-width:2; }
+.pump{ fill:#334155; }
+.pump.run{ fill:#22c55e; }
+
+.text{ font-size:14px; fill:black; font-weight:bold; text-anchor:middle; }
+
+/* PIPES */
+.pipe{
+    stroke-width:6;
+    fill:none;
+    stroke-dasharray:10;
+    stroke-dashoffset:1000;
 }
 
-.pump{
-    fill:#2c3e50;
+.pipe.run{
+    animation:flow 5s linear infinite;
 }
 
-.text{
-    font-size:14px;
-    fill:#000;
-    font-weight:bold;
-    text-anchor:middle;
+@keyframes flow{
+    to{ stroke-dashoffset:0; }
 }
 
-.pipe-yellow{ stroke:#f1c40f; stroke-width:6; fill:none; }
-.pipe-orange{ stroke:#e67e22; stroke-width:6; fill:none; }
-.pipe-blue{ stroke:#5dade2; stroke-width:6; fill:none; }
-.pipe-purple{ stroke:#8e44ad; stroke-width:6; fill:none; }
+/* COLORS */
+.yellow{ stroke:#facc15; }
+.orange{ stroke:#fb923c; }
+.blue{ stroke:#38bdf8; }
+.purple{ stroke:#c084fc; }
 
+/* FAN */
+.fan-blade{
+    transform-origin:150px 60px;
+}
+
+.fan-spin{
+    animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+    from{ transform:rotate(0deg); }
+    to{ transform:rotate(360deg); }
+}
 </style>
 </head>
 
 <body>
-<div class="container">
 
-<svg width="1200" height="500">
+<div class="panel">
+    <button class="start" onclick="startSystem()">START</button>
+    <button class="stop" onclick="stopSystem()">STOP</button>
 
-    <!-- Cooling Tower -->
-    <rect x="100" y="80" width="200" height="80" class="box"/>
-    <text x="200" y="125" class="text">Cooling Tower</text>
+    <div class="temp-box">
+        <button class="temp-btn" onclick="changeTemp(-1)">-</button>
+        <div id="tempValue">24°C</div>
+        <button class="temp-btn" onclick="changeTemp(1)">+</button>
+    </div>
+</div>
 
-    <rect x="130" y="20" width="40" height="60" class="box"/>
-    <text x="150" y="55" class="text">CT1</text>
+<svg>
 
-    <rect x="210" y="20" width="40" height="60" class="box"/>
-    <text x="230" y="55" class="text">CT2</text>
+    <!-- CT -->
+    <rect x="80" y="100" width="140" height="80" class="box"/>
+    <text x="150" y="145" class="text">Cooling Tower</text>
 
-    <!-- CDP Pumps -->
-    <rect x="120" y="250" width="50" height="50" class="pump"/>
-    <text x="145" y="280" fill="white">CDP1</text>
+    <!-- FAN -->
+    <circle cx="150" cy="60" r="25" fill="#94a3b8"/>
+    <rect id="fan" x="145" y="35" width="10" height="50" fill="white" class="fan-blade"/>
 
-    <rect x="200" y="250" width="50" height="50" class="pump"/>
-    <text x="225" y="280" fill="white">CDP2</text>
+    <!-- Chiller -->
+    <rect x="400" y="130" width="140" height="60" class="box"/>
+    <text x="470" y="165" class="text">Chiller</text>
 
-    <rect x="280" y="250" width="50" height="50" class="pump"/>
-    <text x="305" y="280" fill="white">CDP3</text>
+    <!-- Pumps -->
+    <rect id="cdp" x="120" y="250" width="50" height="50" class="pump"/>
+    <text x="145" y="280" fill="white">CDP</text>
 
-    <!-- Chillers -->
-    <rect x="450" y="120" width="120" height="50" class="box"/>
-    <text x="510" y="150" class="text">Chiller 2</text>
-
-    <rect x="450" y="200" width="120" height="50" class="box"/>
-    <text x="510" y="230" class="text">Chiller 1</text>
-
-    <!-- CHP Pumps -->
-    <rect x="700" y="260" width="50" height="50" class="pump"/>
-    <text x="725" y="290" fill="white">CHP1</text>
-
-    <rect x="780" y="260" width="50" height="50" class="pump"/>
-    <text x="805" y="290" fill="white">CHP2</text>
-
-    <rect x="860" y="260" width="50" height="50" class="pump"/>
-    <text x="885" y="290" fill="white">CHP3</text>
+    <rect id="chp" x="650" y="250" width="50" height="50" class="pump"/>
+    <text x="675" y="280" fill="white">CHP</text>
 
     <!-- Load -->
-    <rect x="1000" y="130" width="40" height="150" class="box"/>
-    <text x="1020" y="120" class="text">Load</text>
+    <rect x="900" y="130" width="40" height="150" class="box"/>
+    <text x="920" y="120" class="text">LOAD</text>
 
-    <!-- PIPES -->
-
-    <!-- Yellow (CDP to CT return loop) -->
-    <path d="M145 250 L145 180 L100 180 L100 120 L300 120" class="pipe-yellow"/>
-    <path d="M305 250 L305 180" class="pipe-yellow"/>
-
-    <!-- Orange (CT to Chiller condenser line) -->
-    <path d="M300 120 L450 145" class="pipe-orange"/>
-
-    <!-- Blue (Chiller to Load supply) -->
-    <path d="M570 145 L900 145 L900 130 L1000 130" class="pipe-blue"/>
-
-    <!-- Purple (Return from Load to CHP and back to Chiller) -->
-    <path d="M1000 280 L900 280 L900 260 L700 260" class="pipe-purple"/>
-    <path d="M700 260 L510 225" class="pipe-purple"/>
+    <!-- Pipes -->
+    <path id="pipe1" d="M150 180 L150 220 L400 220 L400 160" class="pipe yellow"/>
+    <path id="pipe2" d="M540 160 L900 160" class="pipe blue"/>
+    <path id="pipe3" d="M900 260 L650 260 L650 220 L470 190" class="pipe purple"/>
 
 </svg>
 
-</div>
+<script>
+
+let systemRunning = false;
+let temp = 24;
+
+function startSystem(){
+    systemRunning = true;
+
+    document.getElementById("cdp").classList.add("run");
+    document.getElementById("chp").classList.add("run");
+
+    document.getElementById("pipe1").classList.add("run");
+    document.getElementById("pipe2").classList.add("run");
+    document.getElementById("pipe3").classList.add("run");
+
+    document.getElementById("fan").classList.add("fan-spin");
+}
+
+function stopSystem(){
+    systemRunning = false;
+
+    document.getElementById("cdp").classList.remove("run");
+    document.getElementById("chp").classList.remove("run");
+
+    document.getElementById("pipe1").classList.remove("run");
+    document.getElementById("pipe2").classList.remove("run");
+    document.getElementById("pipe3").classList.remove("run");
+
+    document.getElementById("fan").classList.remove("fan-spin");
+}
+
+function changeTemp(value){
+    temp += value;
+    if(temp < 18) temp = 18;
+    if(temp > 30) temp = 30;
+
+    document.getElementById("tempValue").innerText = temp + "°C";
+}
+
+</script>
+
 </body>
 </html>
