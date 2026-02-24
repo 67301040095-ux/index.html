@@ -52,29 +52,10 @@ light.castShadow = true;
 scene.add(light);
 
 // ================= MATERIAL =================
-const whiteMat = new THREE.MeshStandardMaterial({
-color:0xffffff,
-metalness:0.3,
-roughness:0.4
-});
-
-const metalMat = new THREE.MeshStandardMaterial({
-color:0xd0d5db,
-metalness:0.8,
-roughness:0.3
-});
-
-const darkMat = new THREE.MeshStandardMaterial({
-color:0x555b66,
-metalness:0.7,
-roughness:0.4
-});
-
-const accentMat = new THREE.MeshStandardMaterial({
-color:0x2d6cdf,
-metalness:0.6,
-roughness:0.3
-});
+const whiteMat = new THREE.MeshStandardMaterial({color:0xffffff,metalness:0.3,roughness:0.4});
+const metalMat = new THREE.MeshStandardMaterial({color:0xd0d5db,metalness:0.8,roughness:0.3});
+const darkMat  = new THREE.MeshStandardMaterial({color:0x555b66,metalness:0.7,roughness:0.4});
+const accentMat= new THREE.MeshStandardMaterial({color:0x2d6cdf,metalness:0.6,roughness:0.3});
 
 // ================= GROUND =================
 const ground = new THREE.Mesh(
@@ -87,51 +68,30 @@ scene.add(ground);
 
 // ================= COOLING TOWER =================
 function createCT(x,z){
-
 const group = new THREE.Group();
 
-// base
-const base = new THREE.Mesh(
-new THREE.BoxGeometry(28,4,28),
-metalMat
-);
+const base = new THREE.Mesh(new THREE.BoxGeometry(28,4,28),metalMat);
 base.position.y = 2;
 group.add(base);
 
-// body
-const body = new THREE.Mesh(
-new THREE.BoxGeometry(22,36,22),
-whiteMat
-);
+const body = new THREE.Mesh(new THREE.BoxGeometry(22,36,22),whiteMat);
 body.position.y = 22;
 group.add(body);
 
-// louver lines
 for(let i=-10;i<=10;i+=4){
-const line = new THREE.Mesh(
-new THREE.BoxGeometry(22,0.4,0.6),
-metalMat
-);
+const line = new THREE.Mesh(new THREE.BoxGeometry(22,0.4,0.6),metalMat);
 line.position.set(0,20+i,11.5);
 group.add(line);
 }
 
-// fan hub
-const hub = new THREE.Mesh(
-new THREE.CylinderGeometry(2,2,2,32),
-darkMat
-);
+const hub = new THREE.Mesh(new THREE.CylinderGeometry(2,2,2,32),darkMat);
 hub.rotation.x = Math.PI/2;
 hub.position.y = 42;
 group.add(hub);
 
-// fan blades
 const blades = new THREE.Group();
 for(let i=0;i<6;i++){
-const blade = new THREE.Mesh(
-new THREE.BoxGeometry(10,1,3),
-darkMat
-);
+const blade = new THREE.Mesh(new THREE.BoxGeometry(10,1,3),darkMat);
 blade.position.x = 8;
 blade.rotation.y = Math.PI/10;
 const pivot = new THREE.Group();
@@ -145,44 +105,36 @@ group.add(blades);
 
 group.position.set(x,0,z);
 scene.add(group);
-
 return blades;
+}
+
+// ================= PIPE FUNCTION =================
+function createPipe(length, radius=2.2, color=0xf4b400){
+const geo = new THREE.CylinderGeometry(radius, radius, length, 20);
+const mat = new THREE.MeshStandardMaterial({color:color,metalness:0.6,roughness:0.4});
+return new THREE.Mesh(geo, mat);
 }
 
 // ================= CHILLER =================
 function createChiller(x,z){
-
 const group = new THREE.Group();
 
-// condenser barrel
-const barrel1 = new THREE.Mesh(
-new THREE.CylinderGeometry(8,8,65,32),
-whiteMat
-);
+const barrel1 = new THREE.Mesh(new THREE.CylinderGeometry(8,8,65,32),whiteMat);
 barrel1.rotation.z = Math.PI/2;
 barrel1.position.y = 12;
 group.add(barrel1);
 
-// evaporator barrel
 const barrel2 = barrel1.clone();
 barrel2.position.y = 24;
 group.add(barrel2);
 
-// saddles
 for(let i=-18;i<=18;i+=36){
-const saddle = new THREE.Mesh(
-new THREE.BoxGeometry(28.8,4,20),
-metalMat
-);
+const saddle = new THREE.Mesh(new THREE.BoxGeometry(28.8,4,20),metalMat);
 saddle.position.set(i,6,0);
 group.add(saddle);
 }
 
-// control panel
-const panel = new THREE.Mesh(
-new THREE.BoxGeometry(14,10,2),
-accentMat
-);
+const panel = new THREE.Mesh(new THREE.BoxGeometry(14,10,2),accentMat);
 panel.position.set(0,18,8);
 group.add(panel);
 
@@ -192,105 +144,48 @@ scene.add(group);
 
 // ================= PUMP =================
 function createPump(x,z){
-
 const group = new THREE.Group();
 
-// ===== BASE =====
-const base = new THREE.Mesh(
-  new THREE.BoxGeometry(22,2,14),
-  darkMat
-);
+const base = new THREE.Mesh(new THREE.BoxGeometry(22,2,14),darkMat);
 base.position.y = 1;
 group.add(base);
 
-// ===== LOWER SHAFT BODY =====
-const lower = new THREE.Mesh(
-  new THREE.BoxGeometry(6,8,6),
-  metalMat
-);
+const lower = new THREE.Mesh(new THREE.BoxGeometry(6,8,6),metalMat);
 lower.position.y = 6;
 group.add(lower);
 
-// ===== VOLUTE (โข่ง) =====
-const volute = new THREE.Mesh(
-  new THREE.CylinderGeometry(6,6,6,32),
-  whiteMat
-);
+const volute = new THREE.Mesh(new THREE.CylinderGeometry(6,6,6,32),whiteMat);
 volute.position.y = 11;
 group.add(volute);
 
-// ===== SUCTION (Front - จาก CT) =====
-const suction = new THREE.Mesh(
-  new THREE.CylinderGeometry(2.5,2.5,8,32),
-  metalMat
-);
+const suction = new THREE.Mesh(new THREE.CylinderGeometry(2.5,2.5,8,32),metalMat);
 suction.rotation.x = Math.PI/2;
 suction.position.set(0,11,7);
 group.add(suction);
 
-// ===== DISCHARGE (Back - ไป CH) =====
-const discharge = new THREE.Mesh(
-  new THREE.CylinderGeometry(2.5,2.5,8,32),
-  metalMat
-);
+const discharge = new THREE.Mesh(new THREE.CylinderGeometry(2.5,2.5,8,32),metalMat);
 discharge.rotation.x = Math.PI/2;
 discharge.position.set(0,11,-7);
 group.add(discharge);
 
-// ===== MOTOR =====
-const motor = new THREE.Mesh(
-  new THREE.CylinderGeometry(5,5,10,32),
-  accentMat
-);
+const motor = new THREE.Mesh(new THREE.CylinderGeometry(5,5,10,32),accentMat);
 motor.position.y = 18;
 group.add(motor);
 
-// ===== MOTOR CAP =====
-const cap = new THREE.Mesh(
-  new THREE.CylinderGeometry(5,5,2,32),
-  darkMat
-);
+const cap = new THREE.Mesh(new THREE.CylinderGeometry(5,5,2,32),darkMat);
 cap.position.y = 24;
 group.add(cap);
 
 group.position.set(x,0,z);
 scene.add(group);
 }
+
 // ================= AHU =================
 function createAHU(x,z){
-
 const group = new THREE.Group();
-
-const body = new THREE.Mesh(
-new THREE.BoxGeometry(70,20,22),
-whiteMat
-);
+const body = new THREE.Mesh(new THREE.BoxGeometry(70,20,22),whiteMat);
 body.position.y = 12;
 group.add(body);
-
-// module split
-for(let i=-30;i<=30;i+=15){
-const line = new THREE.Mesh(
-new THREE.BoxGeometry(1,20,22),
-metalMat
-);
-line.position.set(i,12,0);
-group.add(line);
-}
-
-// return grill
-const grill = new THREE.Mesh(
-new THREE.BoxGeometry(16,10,1),
-darkMat
-);
-grill.position.set(-30,12,11.5);
-group.add(grill);
-
-// supply outlet
-const outlet = grill.clone();
-outlet.position.set(30,12,11.5);
-group.add(outlet);
-
 group.position.set(x,0,z);
 scene.add(group);
 }
@@ -306,6 +201,30 @@ createChiller(0,-70);
 [80,100,120].forEach(x => createPump(x,-10));
 createAHU(160,-60);
 
+// ================= CONDENSER PIPE (CT → CDP) =================
+const headerY = 38;
+const pumpY = 15;
+
+const ctHeader = createPipe(30);
+ctHeader.rotation.z = Math.PI/2;
+ctHeader.position.set(-125, headerY, -70);
+scene.add(ctHeader);
+
+const dropLeft = createPipe(headerY - pumpY);
+dropLeft.position.set(-140, (headerY + pumpY)/2, -70);
+scene.add(dropLeft);
+
+const pumpHeader = createPipe(40);
+pumpHeader.rotation.z = Math.PI/2;
+pumpHeader.position.set(-100, pumpY, -70);
+scene.add(pumpHeader);
+
+[-120, -100, -80].forEach(x => {
+const branch = createPipe(pumpY - 5);
+branch.position.set(x, (pumpY - 5)/2, -70);
+scene.add(branch);
+});
+
 // ================= SYSTEM =================
 let systemOn = false;
 let fanSpeed = 0;
@@ -314,17 +233,11 @@ function startSystem(){
 setTimeout(()=>{ systemOn = true; },2000);
 }
 
-// ================= ANIMATION =================
 function animate(){
 requestAnimationFrame(animate);
-
-if(systemOn){
-fanSpeed = 0.1;
-}
-
+if(systemOn){ fanSpeed = 0.1; }
 fan1.rotation.y -= fanSpeed;
 fan2.rotation.y -= fanSpeed;
-
 controls.update();
 renderer.render(scene,camera);
 }
