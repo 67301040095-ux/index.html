@@ -102,7 +102,15 @@ blades.add(pivot);
 blades.rotation.y = Math.PI/2;
 blades.position.y = 42;
 group.add(blades);
+// ===== OUTLET NOZZLE =====
+const outlet = new THREE.Mesh(
+  new THREE.CylinderGeometry(2.5,2.5,10,32),
+  metalMat
+);
 
+outlet.rotation.x = Math.PI/2;
+outlet.position.set(0,12,-16);
+group.add(outlet);
 group.position.set(x,0,z);
 scene.add(group);
 return blades;
