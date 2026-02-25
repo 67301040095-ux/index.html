@@ -102,25 +102,10 @@ blades.add(pivot);
 blades.rotation.y = Math.PI/2;
 blades.position.y = 42;
 group.add(blades);
-// ===== OUTLET NOZZLE =====
-const outlet = new THREE.Mesh(
-  new THREE.CylinderGeometry(2.5,2.5,10,32),
-  metalMat
-);
 
-outlet.rotation.x = Math.PI/2;
-outlet.position.set(0,12,-16);
-group.add(outlet);
 group.position.set(x,0,z);
 scene.add(group);
 return blades;
-}
-
-// ================= PIPE FUNCTION =================
-function createPipe(length, radius=2.2, color=0xf4b400){
-const geo = new THREE.CylinderGeometry(radius, radius, length, 20);
-const mat = new THREE.MeshStandardMaterial({color:color,metalness:0.6,roughness:0.4});
-return new THREE.Mesh(geo, mat);
 }
 
 // ================= CHILLER =================
@@ -199,7 +184,6 @@ scene.add(group);
 }
 
 // ================= LAYOUT =================
-
 const fan1 = createCT(-140,-70);
 const fan2 = createCT(-110,-70);
 
@@ -208,30 +192,6 @@ createChiller(0,-20);
 createChiller(0,-70);
 [80,100,120].forEach(x => createPump(x,-10));
 createAHU(160,-60);
-
-// ================= CONDENSER PIPE (CT → CDP) =================
-const headerY = 38;
-const pumpY = 15;
-
-const ctHeader = createPipe(30);
-ctHeader.rotation.z = Math.PI/2;
-ctHeader.position.set(-125, headerY, -70);
-scene.add(ctHeader);
-
-const dropLeft = createPipe(headerY - pumpY);
-dropLeft.position.set(-140, (headerY + pumpY)/2, -70);
-scene.add(dropLeft);
-
-const pumpHeader = createPipe(40);
-pumpHeader.rotation.z = Math.PI/2;
-pumpHeader.position.set(-100, pumpY, -70);
-scene.add(pumpHeader);
-
-[-120, -100, -80].forEach(x => {
-const branch = createPipe(pumpY - 5);
-branch.position.set(x, (pumpY - 5)/2, -70);
-scene.add(branch);
-});
 
 // ================= SYSTEM =================
 let systemOn = false;
