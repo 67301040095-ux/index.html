@@ -222,44 +222,24 @@ createAHU(160,-60);
 
 // ================= FLOW PATH =================
 
-// 🟠 SUPPLY LOOP
 const supplyFlow = createFlow([
 
-    // CT
-    new THREE.Vector3(-140, 5, -70),
+    new THREE.Vector3(-150, 5, -60),  // CT
+    new THREE.Vector3(-120, 5, -20),  // CDP
+    new THREE.Vector3(0, 5, -60),     // CH
+    new THREE.Vector3(0, 5, -20),     // CHP
+    new THREE.Vector3(150, 5, -60)    // AHU
 
-    // ไป CDP
-    new THREE.Vector3(-120, 5, -40),
+], 0xff8800, 0.0008);
 
-    // เข้า CH
-    new THREE.Vector3(0, 5, -40),
-
-    // ไป CHP
-    new THREE.Vector3(80, 5, -40),
-
-    // ไป AHU
-    new THREE.Vector3(160, 5, -60)
-
-], 0xff8800, 0.008);
-
-
-// 🔵 RETURN LOOP
 const returnFlow = createFlow([
 
-    // ออกจาก AHU
-    new THREE.Vector3(160, 5, -60),
+    new THREE.Vector3(150, 5, -60),   // AHU
+    new THREE.Vector3(0, 5, -60),     // CH
+    new THREE.Vector3(-150, 5, -60)   // CT
 
-    // กลับ CHP
-    new THREE.Vector3(80, 5, -40),
-
-    // กลับ CH
-    new THREE.Vector3(0, 5, -40),
-
-    // กลับ CT
-    new THREE.Vector3(-140, 5, -70)
-
-], 0x0088ff, 0.008);
-
+], 0x0088ff, 0.0008);
+  
 // ================= SYSTEM =================
 let systemOn = false;
 let fanSpeed = 0;
