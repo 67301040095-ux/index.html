@@ -174,13 +174,57 @@ scene.add(group);
 }
 
 // ================= AHU =================
-function createAHU(x,z){
-const group = new THREE.Group();
-const body = new THREE.Mesh(new THREE.BoxGeometry(70,20,22),whiteMat);
-body.position.y = 12;
-group.add(body);
-group.position.set(x,0,z);
-scene.add(group);
+function createAHU(x, z){
+
+    const group = new THREE.Group();
+
+    // ===== ตัวเครื่อง =====
+    const body = new THREE.Mesh(
+        new THREE.BoxGeometry(70,20,22),
+        whiteMat
+    );
+    body.position.y = 12;
+    group.add(body);
+
+
+    // ===== วงแหวนช่องพัดลม =====
+    const ring = new THREE.Mesh(
+        new THREE.CylinderGeometry(8,8,2,32),
+        new THREE.MeshStandardMaterial({ color: 0x444444 })
+    );
+    ring.rotation.x = Math.PI / 2;   // ให้หันออกด้านหน้า
+    ring.position.set(-25,12,12);    // ตำแหน่งด้านหน้า
+    group.add(ring);
+
+
+    // ===== ใบพัด =====
+    const fanGroup = new THREE.Group();
+
+    const bladeMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+
+    for(let i=0;i<4;i++){
+        const blade = new THREE.Mesh(
+            new THREE.BoxGeometry(1.5,12,2),
+            bladeMat
+        );
+        blade.position.y = 0;
+        blade.rotation.z = i * Math.PI / 2;
+        fanGroup.add(blade);
+    }
+
+    fanGroup.rotation.x = Math.PI / 2;
+    fanGroup.position.set(-25,12,13);
+    group.add(fanGroup);
+
+
+    // เก็บ fan ไว้ควบคุมตอน animate
+    group.userData.fan = fanGroup;
+
+
+    group.position.set(x,0,z);
+    scene.add(group);
+
+    return group;   // สำคัญ! ต้อง return
 }
 
 // ================= FLOW DOT SYSTEM =================
