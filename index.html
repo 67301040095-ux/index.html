@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Real Pipe Flow</title>
+<title>2 Pipe Only</title>
 <style>
 body{margin:0;overflow:hidden;background:#1e2228;}
 button{
@@ -39,7 +39,6 @@ controls.enableDamping = true;
 scene.add(new THREE.AmbientLight(0xffffff,0.6));
 const light = new THREE.DirectionalLight(0xffffff,1);
 light.position.set(300,400,200);
-light.castShadow=true;
 scene.add(light);
 
 const ground = new THREE.Mesh(
@@ -47,89 +46,65 @@ new THREE.PlaneGeometry(1000,800),
 new THREE.MeshStandardMaterial({color:0xf0f0f0})
 );
 ground.rotation.x = -Math.PI/2;
-ground.receiveShadow = true;
 scene.add(ground);
 
-// ===== BOX =====
 function box(x,z,color){
 const m = new THREE.Mesh(
 new THREE.BoxGeometry(80,80,80),
 new THREE.MeshStandardMaterial({color:color})
 );
 m.position.set(x,40,z);
-m.castShadow=true;
 scene.add(m);
 }
 
+// กล่อง
 box(-300,-200,0xaaaaaa); // CT
-box(300,-200,0xddddcc);  // AHU
 box(-300,0,0x000000);    // CDP
 box(300,0,0x000000);     // CHP
-box(0,-100,0xcccccc);    // CH
+box(300,-200,0xddddcc);  // AHU
 
-// ===== CREATE PIPE (L SHAPE) =====
+// ===== สร้างท่อ =====
 function createPipe(points,color){
 
 const curve = new THREE.CatmullRomCurve3(points);
-const geometry = new THREE.TubeGeometry(curve,100,6,16,false);
-
+const geometry = new THREE.TubeGeometry(curve,80,6,16,false);
 const material = new THREE.MeshStandardMaterial({color:color});
 const mesh = new THREE.Mesh(geometry,material);
-mesh.castShadow=true;
 scene.add(mesh);
 
 return curve;
 }
 
-// ===== PATHS ตามรูปคุณ =====
-
-// ซ้ายบน → กลาง
+// 🔴 CT → CDP
 const curve1 = createPipe([
 new THREE.Vector3(-300,15,-200),
-new THREE.Vector3(-300,15,-150),
-new THREE.Vector3(0,15,-150),
-new THREE.Vector3(0,15,-100)
+new THREE.Vector3(-300,15,-100),
+new THREE.Vector3(-300,15,0)
 ],0xff0000);
 
-// ซ้ายล่าง → กลาง
+// 🔵 CHP → AHU
 const curve2 = createPipe([
-new THREE.Vector3(-300,15,0),
-new THREE.Vector3(-300,15,-50),
-new THREE.Vector3(0,15,-50),
-new THREE.Vector3(0,15,-100)
-],0xffaa00);
-
-// กลาง → ขวาบน
-const curve3 = createPipe([
-new THREE.Vector3(0,15,-100),
-new THREE.Vector3(0,15,-150),
-new THREE.Vector3(300,15,-150),
+new THREE.Vector3(300,15,0),
+new THREE.Vector3(300,15,-100),
 new THREE.Vector3(300,15,-200)
 ],0x0000ff);
 
-// กลาง → ขวาล่าง
-const curve4 = createPipe([
-new THREE.Vector3(0,15,-100),
-new THREE.Vector3(0,15,-50),
-new THREE.Vector3(300,15,-50),
-new THREE.Vector3(300,15,0)
-],0x00ff00);
 
-// ===== BALL FLOW =====
+// ===== ลูกบอลวิ่ง =====
 function createBallFlow(curve,color){
 
 const balls=[];
-for(let i=0;i<5;i++){
+for(let i=0;i<4;i++){
 const b = new THREE.Mesh(
-new THREE.SphereGeometry(7,32,32),
+new THREE.SphereGeometry(6,32,32),
 new THREE.MeshStandardMaterial({
 color:color,
 emissive:color,
-emissiveIntensity:0.7
+emissiveIntensity:0.8
 })
 );
 scene.add(b);
-balls.push({mesh:b,offset:i*0.2});
+balls.push({mesh:b,offset:i*0.25});
 }
 
 return function(progress){
@@ -143,9 +118,7 @@ obj.mesh.position.copy(curve.getPointAt(t));
 }
 
 const flow1 = createBallFlow(curve1,0xffff00);
-const flow2 = createBallFlow(curve2,0xffff00);
-const flow3 = createBallFlow(curve3,0x00ffff);
-const flow4 = createBallFlow(curve4,0x00ffff);
+const flow2 = createBallFlow(curve2,0x00ffff);
 
 let progress=0;
 let running=false;
@@ -159,12 +132,10 @@ function animate(){
 requestAnimationFrame(animate);
 
 if(running){
-progress+=0.003;
+progress+=0.004;
 if(progress>1)progress=1;
 flow1(progress);
 flow2(progress);
-flow3(progress);
-flow4(progress);
 }
 
 controls.update();
