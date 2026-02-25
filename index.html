@@ -183,7 +183,7 @@ function createAHU(x, z){
         new THREE.BoxGeometry(70,20,22),
         whiteMat
     );
-    body.position.x = 12;
+    body.position.y = 12;
     group.add(body);
 
 
@@ -204,7 +204,7 @@ function createAHU(x, z){
             new THREE.BoxGeometry(1.5,12,2),
             bladeMat
         );
-        blade.position.y = 0;
+        blade.position.x = 0;
         blade.rotation.z = i * Math.PI / 2;
         fanGroup.add(blade);
     }
