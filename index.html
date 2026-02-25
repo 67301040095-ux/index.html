@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>3D Chiller Plant Full Version</title>
+<title>3D Chiller Plant Multi Ball</title>
 <style>
 body { margin:0; overflow:hidden; background:#1e2228; }
 button{
@@ -20,6 +20,7 @@ button{
 <button onclick="startSystem()">START SYSTEM</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
 
 <script>
 
@@ -32,12 +33,16 @@ window.innerWidth/window.innerHeight,
 0.1,
 2000
 );
-camera.position.set(0,150,350);
+camera.position.set(0,180,400);
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
 renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
+
+// Orbit Control
+const controls = new THREE.OrbitControls(camera,renderer.domElement);
+controls.enableDamping = true;
 
 // ================= LIGHT =================
 scene.add(new THREE.AmbientLight(0xffffff,0.5));
@@ -49,39 +54,31 @@ scene.add(dirLight);
 
 // ================= GROUND =================
 const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(600,400),
+new THREE.PlaneGeometry(700,400),
 new THREE.MeshStandardMaterial({color:0xf0f0f0})
 );
 ground.rotation.x = -Math.PI/2;
 ground.receiveShadow = true;
 scene.add(ground);
 
-// ================= MATERIAL =================
-const equipMat = new THREE.MeshStandardMaterial({
-color:0xffffff,
-roughness:0.5,
-metalness:0.2
-});
-
 // ================= EQUIPMENT =================
 function createBox(pos,color){
 const mesh = new THREE.Mesh(
-new THREE.BoxGeometry(40,40,40),
+new THREE.BoxGeometry(50,50,50),
 new THREE.MeshStandardMaterial({color:color})
 );
 mesh.position.copy(pos);
-mesh.position.y = 20;
+mesh.position.y = 25;
 mesh.castShadow = true;
 mesh.receiveShadow = true;
 scene.add(mesh);
 }
 
-// Layout ตรงแนวนอน
-const CT  = new THREE.Vector3(-200,0,0);
-const CDP = new THREE.Vector3(-100,0,0);
+const CT  = new THREE.Vector3(-250,0,0);
+const CDP = new THREE.Vector3(-120,0,0);
 const CH  = new THREE.Vector3(0,0,0);
-const CHP = new THREE.Vector3(100,0,0);
-const AHU = new THREE.Vector3(200,0,0);
+const CHP = new THREE.Vector3(120,0,0);
+const AHU = new THREE.Vector3(250,0,0);
 
 createBox(CT,0xdedede);
 createBox(CDP,0x87a8ff);
@@ -89,95 +86,78 @@ createBox(CH,0xffffff);
 createBox(CHP,0x87a8ff);
 createBox(AHU,0xdedede);
 
-// ================= BALL =================
+// ================= MULTI BALL FUNCTION =================
+function createFlow(from,to,color,yLevel,count){
+
+const balls = [];
+for(let i=0;i<count;i++){
+
 const ball = new THREE.Mesh(
 new THREE.SphereGeometry(6,32,32),
 new THREE.MeshStandardMaterial({
-color:0xffff00,
-emissive:0xffff00,
+color:color,
+emissive:color,
 emissiveIntensity:0.8
 })
 );
 ball.castShadow = true;
 scene.add(ball);
 
-let pathStart, pathEnd;
-let t = 0;
-let speed = 0.01;
-let step = 0;
+balls.push({
+mesh:ball,
+offset:i*(1/count)
+});
+}
+
+return function(progress){
+
+balls.forEach(obj=>{
+let t = progress - obj.offset;
+if(t < 0) t = 0;
+if(t > 1) t = 1;
+
+obj.mesh.position.lerpVectors(
+new THREE.Vector3(from.x,yLevel,from.z),
+new THREE.Vector3(to.x,yLevel,to.z),
+t
+);
+});
+
+}
+}
+
+// ================= CREATE FLOWS =================
+const flow1 = createFlow(CT,CDP,0xffff00,10,5);
+const flow2 = createFlow(CDP,CH,0xffff00,10,5);
+const flow3 = createFlow(CH,CHP,0x00ff00,10,5);
+const flow4 = createFlow(CHP,AHU,0x00ff00,10,5);
+const flow5 = createFlow(AHU,CH,0x0088ff,45,5);
+const flow6 = createFlow(CH,CT,0xff0000,45,5);
+
+let progress = 0;
 let running = false;
 
-// ================= MOVE FUNCTION =================
-function moveBall(from, to, color, yFrom, yTo){
-
-ball.material.color.set(color);
-ball.material.emissive.set(color);
-
-pathStart = new THREE.Vector3(from.x, yFrom, from.z);
-pathEnd   = new THREE.Vector3(to.x, yTo, to.z);
-
-t = 0;
-running = true;
-}
-
-// ================= SEQUENCE =================
 function startSystem(){
-step = 1;
-nextStep();
+running = true;
+progress = 0;
 }
 
-function nextStep(){
-
-switch(step){
-
-case 1: // 🟡 CT ➜ CDP (เข้าล่าง)
-moveBall(CT, CDP, 0xffff00, 10, 10);
-break;
-
-case 2: // 🟡 CDP ➜ CH (เข้าล่าง)
-moveBall(CDP, CH, 0xffff00, 10, 10);
-break;
-
-case 3: // 🟢 CH ➜ CHP (ออกล่าง)
-moveBall(CH, CHP, 0x00ff00, 10, 10);
-break;
-
-case 4: // 🟢 CHP ➜ AHU (ออกล่าง)
-moveBall(CHP, AHU, 0x00ff00, 10, 10);
-break;
-
-case 5: // 🔵 AHU ➜ CH (เข้าบน)
-moveBall(AHU, CH, 0x0088ff, 40, 40);
-break;
-
-case 6: // 🔴 CH ➜ CT (ออกบน)
-moveBall(CH, CT, 0xff0000, 40, 40);
-break;
-
-default:
-running = false;
-return;
-}
-
-}
-
-// ================= ANIMATE =================
 function animate(){
 requestAnimationFrame(animate);
 
 if(running){
-t += speed;
+progress += 0.005;
+if(progress > 1) progress = 1;
 
-if(t >= 1){
-t = 1;
-running = false;
-step++;
-setTimeout(nextStep,600);
+flow1(progress);
+flow2(progress);
+flow3(progress);
+flow4(progress);
+flow5(progress);
+flow6(progress);
 }
 
-ball.position.lerpVectors(pathStart,pathEnd,t);
-}
-
+controls.update();
 renderer.render(scene,camera);
 }
 animate();
