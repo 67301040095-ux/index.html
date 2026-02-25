@@ -192,16 +192,13 @@ function createAHU(x, z){
         new THREE.CylinderGeometry(8,8,2,32),
         new THREE.MeshStandardMaterial({ color: 0x444444 })
     );
-    ring.rotation.x = Math.PI / 2;   // ให้หันออกด้านหน้า
+    ring.rotation.y = Math.PI / 2;   // ให้หันออกด้านหน้า
     ring.position.set(-25,12,12);    // ตำแหน่งด้านหน้า
     group.add(ring);
 
-
     // ===== ใบพัด =====
     const fanGroup = new THREE.Group();
-
     const bladeMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
-
     for(let i=0;i<4;i++){
         const blade = new THREE.Mesh(
             new THREE.BoxGeometry(1.5,12,2),
@@ -216,11 +213,8 @@ function createAHU(x, z){
     fanGroup.position.set(-25,12,13);
     group.add(fanGroup);
 
-
     // เก็บ fan ไว้ควบคุมตอน animate
     group.userData.fan = fanGroup;
-
-
     group.position.set(x,0,z);
     scene.add(group);
 
