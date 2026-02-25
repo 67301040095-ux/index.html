@@ -222,19 +222,42 @@ createAHU(160,-60);
 
 // ================= FLOW PATH =================
 
-// 🟠 Condenser Supply (CT → Chiller)
-const condenserSupplyFlow = createFlow([
-    new THREE.Vector3(-140, 10, -70),
-    new THREE.Vector3(-60, 10, -70),
-    new THREE.Vector3(0, 10, -40)
+// 🟠 SUPPLY LOOP
+const supplyFlow = createFlow([
+
+    // CT
+    new THREE.Vector3(-140, 5, -70),
+
+    // ไป CDP
+    new THREE.Vector3(-120, 5, -40),
+
+    // เข้า CH
+    new THREE.Vector3(0, 5, -40),
+
+    // ไป CHP
+    new THREE.Vector3(80, 5, -40),
+
+    // ไป AHU
+    new THREE.Vector3(160, 5, -60)
+
 ], 0xff8800, 0.003);
 
 
-// 🔵 Chilled Water Supply (Chiller → AHU)
-const chwSupplyFlow = createFlow([
-    new THREE.Vector3(0, 10, -40),
-    new THREE.Vector3(80, 10, -40),
-    new THREE.Vector3(160, 10, -60)
+// 🔵 RETURN LOOP
+const returnFlow = createFlow([
+
+    // ออกจาก AHU
+    new THREE.Vector3(160, 5, -60),
+
+    // กลับ CHP
+    new THREE.Vector3(80, 5, -40),
+
+    // กลับ CH
+    new THREE.Vector3(0, 5, -40),
+
+    // กลับ CT
+    new THREE.Vector3(-140, 5, -70)
+
 ], 0x0088ff, 0.003);
 
 // ================= SYSTEM =================
@@ -247,11 +270,12 @@ setTimeout(()=>{ systemOn = true; },2000);
 
 function animate(){
 requestAnimationFrame(animate);
-if(systemOn){ fanSpeed = 0.1; }
+if(systemOn){
+    fanSpeed = 0.1;
+    supplyFlow();
+    returnFlow();
+}
 
-condenserSupplyFlow();
-chwSupplyFlow();
-  
 fan1.rotation.y -= fanSpeed;
 fan2.rotation.y -= fanSpeed;
 controls.update();
