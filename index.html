@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>3D Chiller Plant Multi Ball</title>
+<title>3D Deep Layout Plant</title>
 <style>
 body { margin:0; overflow:hidden; background:#1e2228; }
 button{
@@ -24,61 +24,61 @@ button{
 
 <script>
 
-// ================= SCENE =================
+// ===== SCENE =====
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(
 60,
 window.innerWidth/window.innerHeight,
 0.1,
-2000
+3000
 );
-camera.position.set(0,180,400);
+camera.position.set(300,300,500);
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
 renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-// Orbit Control
 const controls = new THREE.OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
 
-// ================= LIGHT =================
+// ===== LIGHT =====
 scene.add(new THREE.AmbientLight(0xffffff,0.5));
 
-const dirLight = new THREE.DirectionalLight(0xffffff,1);
-dirLight.position.set(200,300,200);
-dirLight.castShadow = true;
-scene.add(dirLight);
+const light = new THREE.DirectionalLight(0xffffff,1);
+light.position.set(300,400,200);
+light.castShadow = true;
+scene.add(light);
 
-// ================= GROUND =================
+// ===== GROUND =====
 const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(700,400),
+new THREE.PlaneGeometry(800,800),
 new THREE.MeshStandardMaterial({color:0xf0f0f0})
 );
 ground.rotation.x = -Math.PI/2;
 ground.receiveShadow = true;
 scene.add(ground);
 
-// ================= EQUIPMENT =================
+// ===== CREATE EQUIPMENT =====
 function createBox(pos,color){
 const mesh = new THREE.Mesh(
-new THREE.BoxGeometry(50,50,50),
+new THREE.BoxGeometry(60,60,60),
 new THREE.MeshStandardMaterial({color:color})
 );
 mesh.position.copy(pos);
-mesh.position.y = 25;
+mesh.position.y = 30;
 mesh.castShadow = true;
 mesh.receiveShadow = true;
 scene.add(mesh);
 }
 
-const CT  = new THREE.Vector3(-250,0,0);
-const CDP = new THREE.Vector3(-120,0,0);
-const CH  = new THREE.Vector3(0,0,0);
-const CHP = new THREE.Vector3(120,0,0);
-const AHU = new THREE.Vector3(250,0,0);
+// ===== DEEP LAYOUT (ตามรูป) =====
+const CT  = new THREE.Vector3(0,0,0);
+const CDP = new THREE.Vector3(0,0,-150);
+const CH  = new THREE.Vector3(0,0,-300);
+const CHP = new THREE.Vector3(0,0,-450);
+const AHU = new THREE.Vector3(0,0,-600);
 
 createBox(CT,0xdedede);
 createBox(CDP,0x87a8ff);
@@ -86,14 +86,14 @@ createBox(CH,0xffffff);
 createBox(CHP,0x87a8ff);
 createBox(AHU,0xdedede);
 
-// ================= MULTI BALL FUNCTION =================
+// ===== MULTI BALL =====
 function createFlow(from,to,color,yLevel,count){
 
 const balls = [];
 for(let i=0;i<count;i++){
 
 const ball = new THREE.Mesh(
-new THREE.SphereGeometry(6,32,32),
+new THREE.SphereGeometry(7,32,32),
 new THREE.MeshStandardMaterial({
 color:color,
 emissive:color,
@@ -126,13 +126,13 @@ t
 }
 }
 
-// ================= CREATE FLOWS =================
-const flow1 = createFlow(CT,CDP,0xffff00,10,5);
-const flow2 = createFlow(CDP,CH,0xffff00,10,5);
-const flow3 = createFlow(CH,CHP,0x00ff00,10,5);
-const flow4 = createFlow(CHP,AHU,0x00ff00,10,5);
-const flow5 = createFlow(AHU,CH,0x0088ff,45,5);
-const flow6 = createFlow(CH,CT,0xff0000,45,5);
+// ===== FLOWS =====
+const flow1 = createFlow(CT,CDP,0xffff00,15,5);
+const flow2 = createFlow(CDP,CH,0xffff00,15,5);
+const flow3 = createFlow(CH,CHP,0x00ff00,15,5);
+const flow4 = createFlow(CHP,AHU,0x00ff00,15,5);
+const flow5 = createFlow(AHU,CH,0x0088ff,55,5);
+const flow6 = createFlow(CH,CT,0xff0000,55,5);
 
 let progress = 0;
 let running = false;
@@ -146,7 +146,7 @@ function animate(){
 requestAnimationFrame(animate);
 
 if(running){
-progress += 0.005;
+progress += 0.004;
 if(progress > 1) progress = 1;
 
 flow1(progress);
