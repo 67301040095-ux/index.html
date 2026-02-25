@@ -2,21 +2,22 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Sequential Flow Balls</title>
+<title>3D Chiller Plant Full Version</title>
 <style>
-body { margin:0; overflow:hidden; background:#ffffff; }
+body { margin:0; overflow:hidden; background:#1e2228; }
 button{
   position:fixed;
   top:20px;
   left:20px;
   padding:10px 20px;
   font-size:16px;
+  z-index:10;
 }
 </style>
 </head>
 <body>
 
-<button onclick="startSystem()">START</button>
+<button onclick="startSystem()">START SYSTEM</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
@@ -29,67 +30,97 @@ const camera = new THREE.PerspectiveCamera(
 60,
 window.innerWidth/window.innerHeight,
 0.1,
-1000
+2000
 );
-camera.position.set(0,120,250);
+camera.position.set(0,150,350);
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-scene.add(new THREE.AmbientLight(0xffffff,1));
+// ================= LIGHT =================
+scene.add(new THREE.AmbientLight(0xffffff,0.5));
 
-// ================= EQUIPMENT POSITIONS =================
-const CT  = new THREE.Vector3(-120,0,0);
-const CDP = new THREE.Vector3(-60,0,0);
-const CH  = new THREE.Vector3(0,0,0);
-const CHP = new THREE.Vector3(60,0,0);
-const AHU = new THREE.Vector3(120,0,0);
+const dirLight = new THREE.DirectionalLight(0xffffff,1);
+dirLight.position.set(200,300,200);
+dirLight.castShadow = true;
+scene.add(dirLight);
 
-// กล่องแทนอุปกรณ์
-function box(pos,color){
-const m = new THREE.Mesh(
-new THREE.BoxGeometry(20,20,20),
-new THREE.MeshBasicMaterial({color:color})
+// ================= GROUND =================
+const ground = new THREE.Mesh(
+new THREE.PlaneGeometry(600,400),
+new THREE.MeshStandardMaterial({color:0xf0f0f0})
 );
-m.position.copy(pos);
-m.position.y = 10;
-scene.add(m);
+ground.rotation.x = -Math.PI/2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// ================= MATERIAL =================
+const equipMat = new THREE.MeshStandardMaterial({
+color:0xffffff,
+roughness:0.5,
+metalness:0.2
+});
+
+// ================= EQUIPMENT =================
+function createBox(pos,color){
+const mesh = new THREE.Mesh(
+new THREE.BoxGeometry(40,40,40),
+new THREE.MeshStandardMaterial({color:color})
+);
+mesh.position.copy(pos);
+mesh.position.y = 20;
+mesh.castShadow = true;
+mesh.receiveShadow = true;
+scene.add(mesh);
 }
-box(CT,0xcccccc);
-box(CDP,0x9999ff);
-box(CH,0xffffff);
-box(CHP,0x9999ff);
-box(AHU,0xcccccc);
+
+// Layout ตรงแนวนอน
+const CT  = new THREE.Vector3(-200,0,0);
+const CDP = new THREE.Vector3(-100,0,0);
+const CH  = new THREE.Vector3(0,0,0);
+const CHP = new THREE.Vector3(100,0,0);
+const AHU = new THREE.Vector3(200,0,0);
+
+createBox(CT,0xdedede);
+createBox(CDP,0x87a8ff);
+createBox(CH,0xffffff);
+createBox(CHP,0x87a8ff);
+createBox(AHU,0xdedede);
 
 // ================= BALL =================
 const ball = new THREE.Mesh(
-new THREE.SphereGeometry(4,16,16),
-new THREE.MeshBasicMaterial({color:0xffff00})
+new THREE.SphereGeometry(6,32,32),
+new THREE.MeshStandardMaterial({
+color:0xffff00,
+emissive:0xffff00,
+emissiveIntensity:0.8
+})
 );
+ball.castShadow = true;
 scene.add(ball);
 
-let pathPoints = [];
+let pathStart, pathEnd;
 let t = 0;
 let speed = 0.01;
 let step = 0;
 let running = false;
 
-// ================= PATH FUNCTION =================
-function moveBall(from, to, color, offsetY_from, offsetY_to){
+// ================= MOVE FUNCTION =================
+function moveBall(from, to, color, yFrom, yTo){
 
 ball.material.color.set(color);
+ball.material.emissive.set(color);
 
-pathPoints = [
-new THREE.Vector3(from.x, offsetY_from, from.z),
-new THREE.Vector3(to.x, offsetY_to, to.z)
-];
+pathStart = new THREE.Vector3(from.x, yFrom, from.z);
+pathEnd   = new THREE.Vector3(to.x, yTo, to.z);
 
 t = 0;
 running = true;
 }
 
-// ================= SYSTEM SEQUENCE =================
+// ================= SEQUENCE =================
 function startSystem(){
 step = 1;
 nextStep();
@@ -100,33 +131,32 @@ function nextStep(){
 switch(step){
 
 case 1: // 🟡 CT ➜ CDP (เข้าล่าง)
-moveBall(CT, CDP, 0xffff00, 5, 5);
+moveBall(CT, CDP, 0xffff00, 10, 10);
 break;
 
 case 2: // 🟡 CDP ➜ CH (เข้าล่าง)
-moveBall(CDP, CH, 0xffff00, 5, 5);
+moveBall(CDP, CH, 0xffff00, 10, 10);
 break;
 
 case 3: // 🟢 CH ➜ CHP (ออกล่าง)
-moveBall(CH, CHP, 0x00ff00, 5, 5);
+moveBall(CH, CHP, 0x00ff00, 10, 10);
 break;
 
 case 4: // 🟢 CHP ➜ AHU (ออกล่าง)
-moveBall(CHP, AHU, 0x00ff00, 5, 5);
+moveBall(CHP, AHU, 0x00ff00, 10, 10);
 break;
 
 case 5: // 🔵 AHU ➜ CH (เข้าบน)
-moveBall(AHU, CH, 0x0000ff, 20, 20);
+moveBall(AHU, CH, 0x0088ff, 40, 40);
 break;
 
 case 6: // 🔴 CH ➜ CT (ออกบน)
-moveBall(CH, CT, 0xff0000, 20, 20);
+moveBall(CH, CT, 0xff0000, 40, 40);
 break;
 
 default:
 running = false;
 return;
-
 }
 
 }
@@ -136,23 +166,16 @@ function animate(){
 requestAnimationFrame(animate);
 
 if(running){
-
 t += speed;
 
 if(t >= 1){
 t = 1;
 running = false;
 step++;
-setTimeout(nextStep,500);
+setTimeout(nextStep,600);
 }
 
-const pos = new THREE.Vector3().lerpVectors(
-pathPoints[0],
-pathPoints[1],
-t
-);
-
-ball.position.copy(pos);
+ball.position.lerpVectors(pathStart,pathEnd,t);
 }
 
 renderer.render(scene,camera);
