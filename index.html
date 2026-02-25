@@ -183,6 +183,33 @@ group.position.set(x,0,z);
 scene.add(group);
 }
 
+// ================= FLOW DOT SYSTEM =================
+function createFlow(pathPoints, color = 0x00aaff, speed = 0.002) {
+
+    const curve = new THREE.CatmullRomCurve3(pathPoints);
+    
+    const geometry = new THREE.SphereGeometry(0.6, 16, 16);
+    const material = new THREE.MeshStandardMaterial({
+        color: color,
+        emissive: color,
+        emissiveIntensity: 1
+    });
+
+    const dot = new THREE.Mesh(geometry, material);
+    scene.add(dot);
+
+    let t = 0;
+
+    function animateFlow() {
+        t += speed;
+        if (t > 1) t = 0;
+        const position = curve.getPointAt(t);
+        dot.position.copy(position);
+    }
+
+    return animateFlow;
+}
+  
 // ================= LAYOUT =================
 const fan1 = createCT(-140,-70);
 const fan2 = createCT(-110,-70);
@@ -192,6 +219,23 @@ createChiller(0,-20);
 createChiller(0,-70);
 [80,100,120].forEach(x => createPump(x,-10));
 createAHU(160,-60);
+
+// ================= FLOW PATH =================
+
+// 🟠 Condenser Supply (CT → Chiller)
+const condenserSupplyFlow = createFlow([
+    new THREE.Vector3(-140, 10, -70),
+    new THREE.Vector3(-60, 10, -70),
+    new THREE.Vector3(0, 10, -40)
+], 0xff8800, 0.003);
+
+
+// 🔵 Chilled Water Supply (Chiller → AHU)
+const chwSupplyFlow = createFlow([
+    new THREE.Vector3(0, 10, -40),
+    new THREE.Vector3(80, 10, -40),
+    new THREE.Vector3(160, 10, -60)
+], 0x0088ff, 0.003);
 
 // ================= SYSTEM =================
 let systemOn = false;
@@ -204,6 +248,10 @@ setTimeout(()=>{ systemOn = true; },2000);
 function animate(){
 requestAnimationFrame(animate);
 if(systemOn){ fanSpeed = 0.1; }
+
+condenserSupplyFlow();
+chwSupplyFlow();
+  
 fan1.rotation.y -= fanSpeed;
 fan2.rotation.y -= fanSpeed;
 controls.update();
