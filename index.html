@@ -188,7 +188,7 @@ function createFlow(pathPoints, color = 0x00aaff, speed = 0.002) {
 
     const curve = new THREE.CatmullRomCurve3(pathPoints);
     
-    const geometry = new THREE.SphereGeometry(4, 16, 16);
+    const geometry = new THREE.SphereGeometry(2, 16, 16);
     const material = new THREE.MeshStandardMaterial({
         color: color,
         emissive: color,
