@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>3D Model Layout</title>
+<title>3D Chiller System</title>
 <style>
 body{margin:0;overflow:hidden;background:#1e2228;}
 </style>
@@ -28,7 +28,7 @@ camera.position.set(0,400,700);
 const controls = new THREE.OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
 
-// ===== Lights =====
+// ===== Light =====
 scene.add(new THREE.AmbientLight(0xffffff,0.6));
 
 const light = new THREE.DirectionalLight(0xffffff,1);
@@ -43,35 +43,89 @@ new THREE.MeshStandardMaterial({color:0xf0f0f0})
 ground.rotation.x = -Math.PI/2;
 scene.add(ground);
 
-// ===== Function สร้างกล่อง =====
+
+// ===== ฟังก์ชันสร้างกล่องเครื่อง =====
 function createBox(x,z,color,height=120,width=120,depth=120){
 
 const geometry = new THREE.BoxGeometry(width,height,depth);
-const material = new THREE.MeshStandardMaterial({color:color});
-const box = new THREE.Mesh(geometry,material);
+const material = new THREE.MeshStandardMaterial({
+color:color,
+metalness:0.3,
+roughness:0.6
+});
 
+const box = new THREE.Mesh(geometry,material);
 box.position.set(x,height/2,z);
 scene.add(box);
 
 return box;
 }
 
+
+// ===== ฟังก์ชันสร้างปั๊ม =====
+function createPump(x,z){
+
+const group = new THREE.Group();
+
+// ฐาน
+const base = new THREE.Mesh(
+new THREE.BoxGeometry(140,20,100),
+new THREE.MeshStandardMaterial({color:0x222222})
+);
+base.position.set(0,10,0);
+group.add(base);
+
+// ตัวปั๊ม
+const body = new THREE.Mesh(
+new THREE.CylinderGeometry(40,40,100,32),
+new THREE.MeshStandardMaterial({color:0x0066ff})
+);
+body.rotation.z = Math.PI/2;
+body.position.set(0,50,0);
+group.add(body);
+
+// มอเตอร์
+const motor = new THREE.Mesh(
+new THREE.CylinderGeometry(35,35,90,32),
+new THREE.MeshStandardMaterial({color:0x555555})
+);
+motor.rotation.z = Math.PI/2;
+motor.position.set(-90,50,0);
+group.add(motor);
+
+// หน้าแปลน
+const flange = new THREE.Mesh(
+new THREE.CylinderGeometry(45,45,10,32),
+new THREE.MeshStandardMaterial({color:0x444444})
+);
+flange.rotation.z = Math.PI/2;
+flange.position.set(60,50,0);
+group.add(flange);
+
+group.position.set(x,0,z);
+scene.add(group);
+
+return group;
+}
+
+
 // ===== Layout ตำแหน่งเดิม =====
 
-// ซ้าย (CT)
+// CT ซ้ายบน
 const CT = createBox(-300,-200,0x444444,140,140,140);
 
-// กลาง (CH)
+// CH กลาง
 const CH = createBox(0,-100,0x888888,160,160,160);
 
-// ขวา (AHU)
+// AHU ขวาบน
 const AHU = createBox(300,-200,0xddddcc,120,200,120);
 
-// ล่างซ้าย (CDP)
-const CDP = createBox(-300,0,0x000000,80,120,120);
+// ปั๊มล่างซ้าย
+const CDP = createPump(-300,0);
 
-// ล่างขวา (CHP)
-const CHP = createBox(300,0,0x000000,80,120,120);
+// ปั๊มล่างขวา
+const CHP = createPump(300,0);
+
 
 // ===== Render Loop =====
 function animate(){
