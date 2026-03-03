@@ -2,205 +2,147 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>3D Chiller System</title>
+<title>Cooling Tower</title>
 <style>
-body { margin:0; overflow:hidden; background:#1e2228; }
+body { margin:0; overflow:hidden; }
 </style>
 </head>
 <body>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 
 <script>
 
-// ===== Scene =====
+// ================= SCENE =================
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x1e2228);
+scene.background = new THREE.Color(0xa0c4ff);
 
+// ================= CAMERA =================
+const camera = new THREE.PerspectiveCamera(
+75,
+window.innerWidth/window.innerHeight,
+0.1,
+5000
+);
+camera.position.set(400,400,600);
+camera.lookAt(0,150,0);
+
+// ================= RENDERER =================
 const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,3000);
-camera.position.set(0,400,700);
-
-const controls = new THREE.OrbitControls(camera,renderer.domElement);
-controls.enableDamping = true;
-
-// ===== Light =====
-scene.add(new THREE.AmbientLight(0xffffff,0.6));
+// ================= LIGHT =================
 const light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(300,500,200);
+light.position.set(300,500,300);
 scene.add(light);
 
-// ===== Ground =====
+const ambient = new THREE.AmbientLight(0xffffff,0.4);
+scene.add(ambient);
+
+// ================= GROUND =================
 const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(1200,800),
-new THREE.MeshStandardMaterial({color:0xf0f0f0})
+new THREE.PlaneGeometry(2000,2000),
+new THREE.MeshStandardMaterial({color:0xdddddd})
 );
 ground.rotation.x = -Math.PI/2;
 scene.add(ground);
 
-
-// ============================
-// CREATE COOLING TOWER
-// ============================
-
+// ================= COOLING TOWER =================
 function createCoolingTower(x,z){
 
 const group = new THREE.Group();
 
-// ตัวถัง
-const body = new THREE.Mesh(
-new THREE.BoxGeometry(180,200,180),
-new THREE.MeshStandardMaterial({color:0x555555})
+// BASE
+const base = new THREE.Mesh(
+new THREE.BoxGeometry(220,40,220),
+new THREE.MeshStandardMaterial({color:0x444444})
 );
-body.position.y = 100;
+base.position.y = 20;
+group.add(base);
+
+// BODY
+const body = new THREE.Mesh(
+new THREE.BoxGeometry(170,220,170),
+new THREE.MeshStandardMaterial({color:0x666666})
+);
+body.position.y = 150;
 group.add(body);
 
-// ขอบบน
-const topFrame = new THREE.Mesh(
-new THREE.BoxGeometry(190,20,190),
+// ROOF VENT
+for(let i=0;i<4;i++){
+const vent = new THREE.Mesh(
+new THREE.BoxGeometry(150,25,12),
+new THREE.MeshStandardMaterial({color:0x999999})
+);
+vent.position.y = 250;
+
+if(i===0){ vent.position.z = 85; }
+if(i===1){ vent.position.z = -85; }
+if(i===2){ vent.rotation.y = Math.PI/2; vent.position.x = 85; }
+if(i===3){ vent.rotation.y = Math.PI/2; vent.position.x = -85; }
+
+group.add(vent);
+}
+
+// ROOF FRAME
+const roofFrame = new THREE.Mesh(
+new THREE.BoxGeometry(190,25,190),
 new THREE.MeshStandardMaterial({color:0x333333})
 );
-topFrame.position.y = 210;
-group.add(topFrame);
+roofFrame.position.y = 275;
+group.add(roofFrame);
 
-// วงพัดลม
-const fanRing = new THREE.Mesh(
-new THREE.CylinderGeometry(70,70,15,32),
+// FAN GROUP
+const fanGroup = new THREE.Group();
+
+// fan base
+const fanBase = new THREE.Mesh(
+new THREE.CylinderGeometry(65,65,15,32),
 new THREE.MeshStandardMaterial({color:0x222222})
 );
-fanRing.position.y = 220;
-group.add(fanRing);
+fanBase.position.y = 285;
+fanGroup.add(fanBase);
 
-// ใบพัด
-const fanGroup = new THREE.Group();
+// blades
 for(let i=0;i<4;i++){
 const blade = new THREE.Mesh(
-new THREE.BoxGeometry(120,8,20),
-new THREE.MeshStandardMaterial({color:0xaaaaaa})
+new THREE.BoxGeometry(120,8,18),
+new THREE.MeshStandardMaterial({color:0xcccccc})
 );
+blade.position.y = 292;
 blade.rotation.y = (Math.PI/2)*i;
 fanGroup.add(blade);
 }
-fanGroup.position.y = 230;
+
 group.add(fanGroup);
 
-// เก็บ fanGroup ไว้ใช้หมุน
-group.userData.fan = fanGroup;
-
 group.position.set(x,0,z);
 scene.add(group);
 
-return group;
+return fanGroup; // เอาไว้หมุน
 }
 
+// ================= CREATE CT =================
+const fan = createCoolingTower(0,0);
 
-// ============================
-// CREATE BOX (CH / AHU)
-// ============================
-
-function createBox(x,z,color,height=120,width=120,depth=120){
-const box = new THREE.Mesh(
-new THREE.BoxGeometry(width,height,depth),
-new THREE.MeshStandardMaterial({color:color})
-);
-box.position.set(x,height/2,z);
-scene.add(box);
-return box;
-}
-
-
-// ============================
-// CREATE VERTICAL PUMP
-// ============================
-
-function createPump(x,z){
-
-const group = new THREE.Group();
-
-// ฐาน
-const base = new THREE.Mesh(
-new THREE.BoxGeometry(120,15,120),
-new THREE.MeshStandardMaterial({color:0x1a1a1a})
-);
-base.position.y = 7.5;
-group.add(base);
-
-// หน้าแปลนล่าง
-const flangeBottom = new THREE.Mesh(
-new THREE.CylinderGeometry(50,50,12,32),
-new THREE.MeshStandardMaterial({color:0x444444})
-);
-flangeBottom.position.y = 21;
-group.add(flangeBottom);
-
-// ตัวปั๊ม
-const body = new THREE.Mesh(
-new THREE.CylinderGeometry(40,40,90,32),
-new THREE.MeshStandardMaterial({color:0x0077ff})
-);
-body.position.y = 70;
-group.add(body);
-
-// มอเตอร์
-const motor = new THREE.Mesh(
-new THREE.CylinderGeometry(35,35,60,32),
-new THREE.MeshStandardMaterial({color:0x666666})
-);
-motor.position.y = 140;
-group.add(motor);
-
-// ท่อซ้าย
-const pipeLeft = new THREE.Mesh(
-new THREE.CylinderGeometry(18,18,45,32),
-new THREE.MeshStandardMaterial({color:0xbbbbbb})
-);
-pipeLeft.rotation.z = Math.PI/2;
-pipeLeft.position.set(-55,70,0);
-group.add(pipeLeft);
-
-// ท่อขวา
-const pipeRight = new THREE.Mesh(
-new THREE.CylinderGeometry(18,18,45,32),
-new THREE.MeshStandardMaterial({color:0xbbbbbb})
-);
-pipeRight.rotation.z = Math.PI/2;
-pipeRight.position.set(55,70,0);
-group.add(pipeRight);
-
-group.position.set(x,0,z);
-scene.add(group);
-
-return group;
-}
-
-
-// ===== Layout =====
-
-const CT = createCoolingTower(-300,-200);
-const CH = createBox(0,-100,0x888888,160,160,160);
-const AHU = createBox(300,-200,0xddddcc,120,200,120);
-
-const CDP = createPump(-300,0);
-const CHP = createPump(300,0);
-
-
-// ===== Animate =====
+// ================= ANIMATE =================
 function animate(){
 requestAnimationFrame(animate);
 
-// หมุนพัดลม CT
-if(CT.userData.fan){
-CT.userData.fan.rotation.y += 0.1;
-}
+// หมุนพัดลม
+fan.rotation.y += 0.1;
 
-controls.update();
 renderer.render(scene,camera);
 }
 animate();
+
+// ================= RESIZE =================
+window.addEventListener('resize',()=>{
+camera.aspect = window.innerWidth/window.innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(window.innerWidth,window.innerHeight);
+});
 
 </script>
 </body>
