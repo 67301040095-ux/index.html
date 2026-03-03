@@ -184,25 +184,95 @@ function createAHU(x,z){
 
 const group = new THREE.Group();
 
-const body = new THREE.Mesh(
-new THREE.BoxGeometry(240,150,140),
-new THREE.MeshStandardMaterial({color:0xdedede})
+const bodyColor = 0xdedede;
+const frameColor = 0x555555;
+
+// ขาเหล็ก 4 มุม
+for(let i=0;i<4;i++){
+const leg = new THREE.Mesh(
+new THREE.BoxGeometry(15,40,15),
+new THREE.MeshStandardMaterial({color:frameColor})
 );
-body.position.y = 120;
+leg.position.set(i<2?-120:120,20,i%2==0?-70:70);
+group.add(leg);
+}
+
+// ฐาน
+const base = new THREE.Mesh(
+new THREE.BoxGeometry(280,20,160),
+new THREE.MeshStandardMaterial({color:frameColor})
+);
+base.position.y = 50;
+group.add(base);
+
+// ตัวเครื่องหลัก
+const body = new THREE.Mesh(
+new THREE.BoxGeometry(260,160,140),
+new THREE.MeshStandardMaterial({color:bodyColor})
+);
+body.position.y = 140;
 group.add(body);
 
+// เสาแบ่งช่อง 3 ช่อง
+for(let i=0;i<2;i++){
+const divider = new THREE.Mesh(
+new THREE.BoxGeometry(6,150,140),
+new THREE.MeshStandardMaterial({color:0xaaaaaa})
+);
+divider.position.set(-90 + i*180,140,0);
+group.add(divider);
+}
+
+// ช่องลมด้านหน้า (grill)
+for(let i=0;i<10;i++){
+const grill = new THREE.Mesh(
+new THREE.BoxGeometry(220,4,4),
+new THREE.MeshStandardMaterial({color:0x888888})
+);
+grill.position.set(0,100 + i*12,72);
+group.add(grill);
+}
+
+// Housing พัดลม
 const fanHousing = new THREE.Mesh(
-new THREE.CylinderGeometry(45,45,60,32),
+new THREE.CylinderGeometry(50,50,70,32),
 new THREE.MeshStandardMaterial({color:0x333333})
 );
 fanHousing.rotation.z = Math.PI/2;
-fanHousing.position.set(80,120,0);
+fanHousing.position.set(100,140,0);
 group.add(fanHousing);
+
+// ใบพัด 4 แฉก
+const bladeGeo = new THREE.BoxGeometry(10,4,90);
+for(let i=0;i<4;i++){
+const blade = new THREE.Mesh(
+bladeGeo,
+new THREE.MeshStandardMaterial({color:0x222222})
+);
+blade.rotation.y = Math.PI/2*i;
+blade.position.set(100,140,0);
+group.add(blade);
+}
+
+// ตู้คอนโทรลข้างเครื่อง
+const control = new THREE.Mesh(
+new THREE.BoxGeometry(50,80,25),
+new THREE.MeshStandardMaterial({color:0xbbbbbb})
+);
+control.position.set(-160,140,85);
+group.add(control);
+
+// ท่อบนหลังคา
+const duct = new THREE.Mesh(
+new THREE.BoxGeometry(180,40,100),
+new THREE.MeshStandardMaterial({color:0xcccccc})
+);
+duct.position.set(0,230,0);
+group.add(duct);
 
 group.position.set(x,0,z);
 scene.add(group);
 }
-
 
 // ============================
 // LAYOUT (ห่างจริง)
