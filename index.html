@@ -44,7 +44,7 @@ scene.add(ground);
 
 
 // ============================
-// CREATE COOLING TOWER
+// CREATE COOLING TOWER (เดิม)
 // ============================
 
 function createCoolingTower(x,z){
@@ -72,90 +72,34 @@ return group;
 
 
 // ============================
-// CREATE CHILLER (NEW)
+// CREATE BOX (CH)
 // ============================
 
-function createChiller(x,z){
-
-const group = new THREE.Group();
-
-// ฐาน
-const base = new THREE.Mesh(
-new THREE.BoxGeometry(360,20,160),
-new THREE.MeshStandardMaterial({color:0x444444})
+function createBox(x,z,color,height=120,width=120,depth=120){
+const box = new THREE.Mesh(
+new THREE.BoxGeometry(width,height,depth),
+new THREE.MeshStandardMaterial({color:color})
 );
-base.position.y = 10;
-group.add(base);
-
-// ตัวเครื่อง
-const body = new THREE.Mesh(
-new THREE.BoxGeometry(340,140,140),
-new THREE.MeshStandardMaterial({color:0xcfd2d6})
-);
-body.position.y = 90;
-group.add(body);
-
-// คอมเพรสเซอร์ 2 ลูก
-const compGeo = new THREE.CylinderGeometry(35,35,100,32);
-const compMat = new THREE.MeshStandardMaterial({color:0x222222});
-
-const comp1 = new THREE.Mesh(compGeo,compMat);
-comp1.rotation.z = Math.PI/2;
-comp1.position.set(-80,90,0);
-group.add(comp1);
-
-const comp2 = comp1.clone();
-comp2.position.x = 80;
-group.add(comp2);
-
-// ท่อน้ำเข้า
-const pipeIn = new THREE.Mesh(
-new THREE.CylinderGeometry(15,15,80,32),
-new THREE.MeshStandardMaterial({color:0x0077ff})
-);
-pipeIn.rotation.z = Math.PI/2;
-pipeIn.position.set(-190,90,0);
-group.add(pipeIn);
-
-// ท่อน้ำออก
-const pipeOut = pipeIn.clone();
-pipeOut.position.x = 190;
-group.add(pipeOut);
-
-group.position.set(x,0,z);
-scene.add(group);
-return group;
+box.position.set(x,height/2,z);
+scene.add(box);
+return box;
 }
 
 
 // ============================
-// CREATE AHU
-// ============================
-
-function createAHU(x,z){
-
-const group = new THREE.Group();
-
-const body = new THREE.Mesh(
-new THREE.BoxGeometry(220,130,120),
-new THREE.MeshStandardMaterial({color:0xdedede})
-);
-body.position.y = 85;
-group.add(body);
-
-group.position.set(x,0,z);
-scene.add(group);
-return group;
-}
-
-
-// ============================
-// CREATE VERTICAL PUMP
+// CREATE VERTICAL PUMP (เดิม)
 // ============================
 
 function createPump(x,z){
 
 const group = new THREE.Group();
+
+const base = new THREE.Mesh(
+new THREE.BoxGeometry(120,15,120),
+new THREE.MeshStandardMaterial({color:0x1a1a1a})
+);
+base.position.y = 7.5;
+group.add(base);
 
 const body = new THREE.Mesh(
 new THREE.CylinderGeometry(40,40,90,32),
@@ -170,10 +114,60 @@ return group;
 }
 
 
+// ============================
+// CREATE AHU (NEW)
+// ============================
+
+function createAHU(x,z){
+
+const group = new THREE.Group();
+
+// ===== ฐาน C-Channel =====
+const base = new THREE.Mesh(
+new THREE.BoxGeometry(240,20,140),
+new THREE.MeshStandardMaterial({color:0x444444})
+);
+base.position.y = 10;
+group.add(base);
+
+// ===== ตัวเครื่องหลัก =====
+const body = new THREE.Mesh(
+new THREE.BoxGeometry(220,130,120),
+new THREE.MeshStandardMaterial({color:0xdedede})
+);
+body.position.y = 85;
+group.add(body);
+
+// ===== แบ่ง Panel ด้านข้าง =====
+for(let i=0;i<3;i++){
+const panelLine = new THREE.Mesh(
+new THREE.BoxGeometry(3,110,120),
+new THREE.MeshStandardMaterial({color:0xaaaaaa})
+);
+panelLine.position.set(-70 + i*70,85,0);
+group.add(panelLine);
+}
+
+// ===== ช่องลมด้านข้าง =====
+for(let i=0;i<6;i++){
+const grill = new THREE.Mesh(
+new THREE.BoxGeometry(180,4,4),
+new THREE.MeshStandardMaterial({color:0x888888})
+);
+grill.position.set(0,45 + i*12,62);
+group.add(grill);
+}
+
+group.position.set(x,0,z);
+scene.add(group);
+return group;
+}
+
+
 // ===== Layout =====
 
 const CT = createCoolingTower(-300,-200);
-const CH = createChiller(0,-100);   // 👈 เปลี่ยนตรงนี้แล้ว
+const CH = createBox(0,-100,0x888888,160,160,160);
 const AHU = createAHU(300,-200);
 
 const CDP = createPump(-300,0);
