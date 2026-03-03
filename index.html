@@ -5,15 +5,15 @@
 <title>Mini Chiller Plant 3D</title>
 <style>
 body { margin:0; overflow:hidden; }
-canvas { display:block; }
 </style>
 </head>
 <body>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+<script type="module">
 
-<script>
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf0f0f0);
 
@@ -24,15 +24,14 @@ const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
 
+scene.add(new THREE.AmbientLight(0xffffff,0.6));
 const light = new THREE.DirectionalLight(0xffffff,1);
 light.position.set(10,10,10);
 scene.add(light);
 
-scene.add(new THREE.AmbientLight(0xffffff,0.6));
-
-/* ===== FLOOR ===== */
+/* FLOOR */
 const floor = new THREE.Mesh(
   new THREE.PlaneGeometry(40,40),
   new THREE.MeshStandardMaterial({color:0xdddddd})
@@ -40,66 +39,52 @@ const floor = new THREE.Mesh(
 floor.rotation.x = -Math.PI/2;
 scene.add(floor);
 
-/* ===== CT-01 ===== */
-const ctBody = new THREE.Mesh(
+/* CT */
+const ct = new THREE.Mesh(
   new THREE.BoxGeometry(3,4,3),
   new THREE.MeshStandardMaterial({color:0xcccccc})
 );
-ctBody.position.set(-8,2,0);
-scene.add(ctBody);
+ct.position.set(-8,2,0);
+scene.add(ct);
 
-const ctFan = new THREE.Mesh(
+const fan = new THREE.Mesh(
   new THREE.CylinderGeometry(1.2,1.2,0.3,32),
   new THREE.MeshStandardMaterial({color:0x00aa00})
 );
-ctFan.position.set(-8,4.3,0);
-scene.add(ctFan);
+fan.position.set(-8,4.3,0);
+scene.add(fan);
 
-/* ===== CDP-01 ===== */
-const cdpPump = new THREE.Mesh(
+/* CDP */
+const cdp = new THREE.Mesh(
   new THREE.CylinderGeometry(0.6,0.6,3,32),
   new THREE.MeshStandardMaterial({color:0xffcc00})
 );
-cdpPump.rotation.z = Math.PI/2;
-cdpPump.position.set(-3,1,0);
-scene.add(cdpPump);
+cdp.rotation.z = Math.PI/2;
+cdp.position.set(-3,1,0);
+scene.add(cdp);
 
-/* ===== CH-01 ===== */
-const chiller = new THREE.Mesh(
+/* CH */
+const ch = new THREE.Mesh(
   new THREE.CylinderGeometry(1.2,1.2,5,32),
   new THREE.MeshStandardMaterial({color:0x999999})
 );
-chiller.rotation.z = Math.PI/2;
-chiller.position.set(2,1.5,0);
-scene.add(chiller);
+ch.rotation.z = Math.PI/2;
+ch.position.set(2,1.5,0);
+scene.add(ch);
 
-/* ===== CHP-01 ===== */
-const chpPump = new THREE.Mesh(
+/* CHP */
+const chp = new THREE.Mesh(
   new THREE.CylinderGeometry(0.6,0.6,3,32),
   new THREE.MeshStandardMaterial({color:0x0066ff})
 );
-chpPump.rotation.z = Math.PI/2;
-chpPump.position.set(7,1,0);
-scene.add(chpPump);
+chp.rotation.z = Math.PI/2;
+chp.position.set(7,1,0);
+scene.add(chp);
 
-/* ===== PIPE (Simple Line) ===== */
-function pipe(x1,x2,color){
-  const geometry = new THREE.CylinderGeometry(0.2,0.2,Math.abs(x2-x1),16);
-  const material = new THREE.MeshStandardMaterial({color:color});
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.rotation.z = Math.PI/2;
-  mesh.position.set((x1+x2)/2,1,0);
-  scene.add(mesh);
-}
-
-pipe(-6.5,-4,0xcc9900); // CT → CDP
-pipe(-2,0,0xcc9900);    // CDP → CH
-pipe(4,6,0x0099ff);     // CH → CHP
-
-/* ===== ANIMATION ===== */
+/* Animation */
 function animate(){
   requestAnimationFrame(animate);
-  ctFan.rotation.y += 0.2; // พัดลมหมุน
+  fan.rotation.y += 0.2;
   controls.update();
   renderer.render(scene,camera);
 }
