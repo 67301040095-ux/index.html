@@ -123,100 +123,110 @@ function createChiller(x,z){
 
 const group = new THREE.Group();
 
-const bodyColor = 0x0f3b2e;   // เขียวเข้มโรงงาน
-const metal = 0x333333;
-const metalLight = 0x777777;
+const bodyColor = 0x0f3b2e;
+const metal = 0x2a2a2a;
+const metalLight = 0x888888;
 
-// ฐาน
+// ================== BASE ==================
 const base = new THREE.Mesh(
-new THREE.BoxGeometry(520,30,240),
+new THREE.BoxGeometry(700,40,260),
 new THREE.MeshStandardMaterial({color:0x444444})
 );
-base.position.y = 15;
+base.position.y = 20;
 group.add(base);
 
-// Evaporator (ล่าง)
+
+// ================== EVAPORATOR (ล่าง) ==================
 const evap = new THREE.Mesh(
-new THREE.CylinderGeometry(100,100,450,48),
+new THREE.CylinderGeometry(120,120,550,64),
 new THREE.MeshStandardMaterial({color:bodyColor})
 );
 evap.rotation.z = Math.PI/2;
-evap.position.y = 130;
+evap.position.y = 170;
 group.add(evap);
 
-// Condenser (บน)
+
+// ================== CONDENSER (บน) ==================
 const cond = new THREE.Mesh(
-new THREE.CylinderGeometry(100,100,450,48),
+new THREE.CylinderGeometry(120,120,550,64),
 new THREE.MeshStandardMaterial({color:bodyColor})
 );
 cond.rotation.z = Math.PI/2;
-cond.position.y = 290;
+cond.position.y = 360;   // เว้นระยะชัดเจน
 group.add(cond);
 
-// ฝาปิดหัวถัง
-const capGeo = new THREE.CylinderGeometry(105,105,30,48);
-[-225,225].forEach(xPos=>{
+
+// ================== END CAPS ==================
+const capGeo = new THREE.CylinderGeometry(130,130,40,64);
+
+[-275,275].forEach(xPos=>{
 let cap1 = new THREE.Mesh(capGeo,new THREE.MeshStandardMaterial({color:metal}));
 cap1.rotation.z = Math.PI/2;
-cap1.position.set(xPos,130,0);
+cap1.position.set(xPos,170,0);
 group.add(cap1);
 
 let cap2 = cap1.clone();
-cap2.position.y = 290;
+cap2.position.y = 360;
 group.add(cap2);
 });
 
-// Compressor (Centrifugal แบบหอยโข่ง)
+
+// ================== COMPRESSOR (ใหญ่ขึ้น) ==================
+
+// หอยโข่ง
 const volute = new THREE.Mesh(
-new THREE.TorusGeometry(80,30,32,100,Math.PI*1.5),
+new THREE.TorusGeometry(110,40,32,120,Math.PI*1.6),
 new THREE.MeshStandardMaterial({color:metal})
 );
 volute.rotation.y = Math.PI/2;
-volute.position.set(0,380,0);
+volute.position.set(0,520,0);
 group.add(volute);
 
+// มอเตอร์
 const motor = new THREE.Mesh(
-new THREE.CylinderGeometry(50,50,140,32),
+new THREE.CylinderGeometry(70,70,220,32),
 new THREE.MeshStandardMaterial({color:metalLight})
 );
 motor.rotation.z = Math.PI/2;
-motor.position.set(140,380,0);
+motor.position.set(200,520,0);
 group.add(motor);
 
-// Control Panel หน้าเครื่อง
+
+// ================== CONTROL PANEL ==================
 const panel = new THREE.Mesh(
-new THREE.BoxGeometry(100,180,50),
+new THREE.BoxGeometry(120,260,70),
 new THREE.MeshStandardMaterial({color:0x1c4f3b})
 );
-panel.position.set(-280,200,150);
+panel.position.set(-380,260,170);
 group.add(panel);
 
-// หน้าจอ Digital
+// จอ
 const screen = new THREE.Mesh(
-new THREE.BoxGeometry(50,35,5),
+new THREE.BoxGeometry(60,40,5),
 new THREE.MeshStandardMaterial({color:0x00ffaa})
 );
-screen.position.set(-280,240,178);
+screen.position.set(-380,320,206);
 group.add(screen);
 
-// ท่อเข้าออก
-const pipeGeo = new THREE.CylinderGeometry(30,30,140,32);
+
+// ================== WATER PIPES ==================
+const pipeGeo = new THREE.CylinderGeometry(40,40,220,32);
 const pipeMat = new THREE.MeshStandardMaterial({color:metalLight});
 
 let pipe1 = new THREE.Mesh(pipeGeo,pipeMat);
 pipe1.rotation.z = Math.PI/2;
-pipe1.position.set(-300,130,0);
+pipe1.position.set(-360,170,0);
 group.add(pipe1);
 
 let pipe2 = pipe1.clone();
-pipe2.position.x = 300;
+pipe2.position.x = 360;
 group.add(pipe2);
+
 
 group.position.set(x,0,z);
 scene.add(group);
 return group;
 }
-
 
 // ===== Layout =====
 
