@@ -330,6 +330,23 @@ createChiller(0,0);
 createPump(-500,280);
 createPump(500,280);
 
+/* ใส่ตรงนี้เลย */
+
+const pipe1 = new THREE.Mesh(
+  new THREE.CylinderGeometry(8, 8, 250, 32),
+  new THREE.MeshStandardMaterial({ color: 0xffffff })
+);
+pipe1.position.set(-500, 125, 280);
+scene.add(pipe1);
+
+const pipe2 = new THREE.Mesh(
+  new THREE.CylinderGeometry(8, 8, 250, 32),
+  new THREE.MeshStandardMaterial({ color: 0xffffff })
+);
+pipe2.position.set(500, 125, 280);
+scene.add(pipe2);
+
+  
 // ===== Animate =====
 function animate(){
 requestAnimationFrame(animate);
