@@ -44,7 +44,7 @@ scene.add(ground);
 
 
 // ============================
-// COOLING TOWER (ของเดิมคุณ)
+// COOLING TOWER
 // ============================
 
 function createCoolingTower(x,z){
@@ -72,7 +72,7 @@ return group;
 
 
 // ============================
-// VERTICAL PUMP (ของเดิมคุณ)
+// VERTICAL PUMP
 // ============================
 
 function createPump(x,z){
@@ -100,7 +100,7 @@ return group;
 
 
 // ============================
-// AHU (ของเดิมคุณ)
+// AHU
 // ============================
 
 function createAHU(x,z){
@@ -116,8 +116,9 @@ return box;
 
 
 // ============================
-// CHILLER (เพิ่มใหม่อย่างเดียว)
+// CHILLER (เหมือนเดิมทุกอย่าง)
 // ============================
+
 function createChiller(x,z){
 
 const group = new THREE.Group();
@@ -126,7 +127,6 @@ const bodyColor = 0x0f3b2e;
 const metal = 0x2a2a2a;
 const metalLight = 0x888888;
 
-// BASE
 const base = new THREE.Mesh(
 new THREE.BoxGeometry(700,40,260),
 new THREE.MeshStandardMaterial({color:0x444444})
@@ -134,7 +134,6 @@ new THREE.MeshStandardMaterial({color:0x444444})
 base.position.y = 20;
 group.add(base);
 
-// EVAPORATOR
 const evap = new THREE.Mesh(
 new THREE.CylinderGeometry(120,120,550,64),
 new THREE.MeshStandardMaterial({color:bodyColor})
@@ -143,7 +142,6 @@ evap.rotation.z = Math.PI/2;
 evap.position.y = 170;
 group.add(evap);
 
-// CONDENSER
 const cond = new THREE.Mesh(
 new THREE.CylinderGeometry(120,120,550,64),
 new THREE.MeshStandardMaterial({color:bodyColor})
@@ -152,7 +150,6 @@ cond.rotation.z = Math.PI/2;
 cond.position.y = 360;
 group.add(cond);
 
-// END CAPS
 const capGeo = new THREE.CylinderGeometry(130,130,40,64);
 
 [-275,275].forEach(xPos=>{
@@ -166,7 +163,6 @@ cap2.position.y = 360;
 group.add(cap2);
 });
 
-// COMPRESSOR
 const volute = new THREE.Mesh(
 new THREE.TorusGeometry(110,40,32,120,Math.PI*1.6),
 new THREE.MeshStandardMaterial({color:metal})
@@ -183,7 +179,6 @@ motor.rotation.z = Math.PI/2;
 motor.position.set(200,520,0);
 group.add(motor);
 
-// CONTROL PANEL
 const panel = new THREE.Mesh(
 new THREE.BoxGeometry(120,260,70),
 new THREE.MeshStandardMaterial({color:0x1c4f3b})
@@ -198,7 +193,6 @@ new THREE.MeshStandardMaterial({color:0x00ffaa})
 screen.position.set(-380,320,206);
 group.add(screen);
 
-// PIPES
 const pipeGeo = new THREE.CylinderGeometry(40,40,220,32);
 const pipeMat = new THREE.MeshStandardMaterial({color:metalLight});
 
@@ -211,15 +205,15 @@ let pipe2 = pipe1.clone();
 pipe2.position.x = 360;
 group.add(pipe2);
 
-// ตำแหน่งเดิม
 group.position.set(x,0,z);
 
-// 🔻 แก้เฉพาะขนาด (ย่อเหลือ 55%)
-group.scale.set(0.55,0.55,0.55);
+// ✅ แก้เฉพาะขนาด (ย่อให้ไม่ทับอุปกรณ์อื่น)
+group.scale.set(0.45,0.45,0.45);
 
 scene.add(group);
 return group;
 }
+
 
 // ===== Layout =====
 
