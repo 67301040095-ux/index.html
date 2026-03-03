@@ -233,12 +233,89 @@ scene.add(group);
 return group;
 }
 
+CREATE VERTICAL PUMP
+// ============AHU==============
+  
+function createAHU(x,z){
 
+const group = new THREE.Group();
+
+
+// ===== Base C-Channel =====
+const base = new THREE.Mesh(
+    new THREE.BoxGeometry(320,15,150),
+    new THREE.MeshStandardMaterial({color:0x333333})
+);
+base.position.y = 7.5;
+group.add(base);
+
+
+// ===== Main Body (ตู้หลัก) =====
+const body = new THREE.Mesh(
+    new THREE.BoxGeometry(300,140,130),
+    new THREE.MeshStandardMaterial({color:0xddddcc})
+);
+body.position.y = 85;
+group.add(body);
+
+
+// ===== Divider Lines (แบ่ง 3 Section) =====
+const dividerMat = new THREE.MeshStandardMaterial({color:0xaaaaaa});
+
+const div1 = new THREE.Mesh(
+    new THREE.BoxGeometry(4,140,132),
+    dividerMat
+);
+div1.position.set(-80,85,0);
+group.add(div1);
+
+const div2 = div1.clone();
+div2.position.x = 40;
+group.add(div2);
+
+
+// ===== Fan Opening (ด้านขวา) =====
+const opening = new THREE.Mesh(
+    new THREE.BoxGeometry(4,90,90),
+    new THREE.MeshStandardMaterial({color:0x222222})
+);
+opening.position.set(150,95,0);
+group.add(opening);
+
+
+// ===== Fan Inside =====
+const fanGroup = new THREE.Group();
+
+const ring = new THREE.Mesh(
+    new THREE.RingGeometry(30,45,32),
+    new THREE.MeshStandardMaterial({color:0x111111, side:THREE.DoubleSide})
+);
+ring.rotation.y = Math.PI/2;
+fanGroup.add(ring);
+
+const bladeGeo = new THREE.BoxGeometry(8,3,70);
+const bladeMat = new THREE.MeshStandardMaterial({color:0x111111});
+
+for(let i=0;i<4;i++){
+    const blade = new THREE.Mesh(bladeGeo,bladeMat);
+    blade.rotation.x = Math.PI/2 * i;
+    fanGroup.add(blade);
+}
+
+fanGroup.position.set(120,95,0);
+group.add(fanGroup);
+
+
+group.position.set(x,0,z);
+scene.add(group);
+return group;
+}
+  
 // ===== Layout =====
 
 const CT = createCoolingTower(-300,-200);  // <<< ใช้ CT ใหม่
 const CH = createBox(0,-100,0x888888,160,160,160);
-const AHU = createBox(300,-200,0xddddcc,120,200,120);
+const AHU = createAHU(300,-200,);
 
 const CDP = createPump(-300,0);
 const CHP = createPump(300,0);
