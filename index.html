@@ -317,14 +317,19 @@ group.position.set(x,0,z);
 scene.add(group);
 return group;
 }
-
+  
 // ===== Layout =====
 
-createCoolingTower(-300,-200);
-createAHU(300,-200);
+// หลัง
+createCoolingTower(-400,-300);
+createAHU(400,-300);
 
-createPump(-300,0);
-createPump(300,0);
+// กลาง (ขยับ Chiller ลงมาหน่อย)
+createChiller(0,-50);
+
+// หน้า (ขยับ Pump ออกข้าง)
+createPump(-500,150);
+createPump(500,150);
 
 // 👇 เพิ่ม Chiller กลางระบบ
 createChiller(0,0);
