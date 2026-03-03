@@ -2,165 +2,80 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>2 Pipe + CH</title>
+<title>3D Model Layout</title>
 <style>
 body{margin:0;overflow:hidden;background:#1e2228;}
-button{
-position:fixed;
-top:20px;
-left:20px;
-padding:10px 20px;
-font-size:16px;
-z-index:10;
-}
 </style>
 </head>
 <body>
-
-<button onclick="startSystem()">START SYSTEM</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
 
 <script>
 
+// ===== Scene =====
 const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1e2228);
+
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 const camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,3000);
-camera.position.set(0,300,700);
+camera.position.set(0,400,700);
 
 const controls = new THREE.OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
 
+// ===== Lights =====
 scene.add(new THREE.AmbientLight(0xffffff,0.6));
+
 const light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(300,400,200);
+light.position.set(300,500,200);
 scene.add(light);
 
+// ===== Ground =====
 const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(1000,800),
+new THREE.PlaneGeometry(1200,800),
 new THREE.MeshStandardMaterial({color:0xf0f0f0})
 );
 ground.rotation.x = -Math.PI/2;
 scene.add(ground);
 
-// ===== สร้างกล่อง =====
-function box(x,z,color){
-const m = new THREE.Mesh(
-new THREE.BoxGeometry(90,90,90),
-new THREE.MeshStandardMaterial({color:color})
-);
-m.position.set(x,45,z);
-scene.add(m);
-}
+// ===== Function สร้างกล่อง =====
+function createBox(x,z,color,height=120,width=120,depth=120){
 
-// Layout
-box(-300,-200,0xaaaaaa); // CT
-box(300,-200,0xddddcc);  // AHU
-box(0,-100,0x888888);    // CH
-box(-300,0,0x000000);    // CDP
-box(300,0,0x000000);     // CHP
-
-
-// ===== สร้างท่อ =====
-function createPipe(points,color){
-const curve = new THREE.CatmullRomCurve3(points);
-const geometry = new THREE.TubeGeometry(curve,80,6,16,false);
+const geometry = new THREE.BoxGeometry(width,height,depth);
 const material = new THREE.MeshStandardMaterial({color:color});
-const mesh = new THREE.Mesh(geometry,material);
-scene.add(mesh);
-return curve;
+const box = new THREE.Mesh(geometry,material);
+
+box.position.set(x,height/2,z);
+scene.add(box);
+
+return box;
 }
 
-// 🔴 CT → CDP (ของเดิม)
-const curve1 = createPipe([
-new THREE.Vector3(-330,15,-200),
-new THREE.Vector3(-330,15,-100),
-new THREE.Vector3(-330,15,0)
-],0xff0000);
+// ===== Layout ตำแหน่งเดิม =====
 
-// 🔵 CHP → AHU (ของเดิม)
-const curve2 = createPipe([
-new THREE.Vector3(280,15,0),
-new THREE.Vector3(280,15,-100),
-new THREE.Vector3(280,15,-200)
-],0x0000ff);
+// ซ้าย (CT)
+const CT = createBox(-300,-200,0x444444,140,140,140);
 
+// กลาง (CH)
+const CH = createBox(0,-100,0x888888,160,160,160);
 
+// ขวา (AHU)
+const AHU = createBox(300,-200,0xddddcc,120,200,120);
 
-// ===== 🔥 เพิ่มท่อ CH ตามรูป =====
+// ล่างซ้าย (CDP)
+const CDP = createBox(-300,0,0x000000,80,120,120);
 
-// 🟢 CH → CHP (ล่างไปขวา)
-const curve3 = createPipe([
-new THREE.Vector3(0,15,-100),
-new THREE.Vector3(0,15,-50),
-new THREE.Vector3(300,15,-50),
-new THREE.Vector3(300,15,0)
-],0x00ff00);
+// ล่างขวา (CHP)
+const CHP = createBox(300,0,0x000000,80,120,120);
 
-// 🔵 AHU → CH (บนขวาเข้ากลาง)
-const curve4 = createPipe([
-new THREE.Vector3(300,15,-200),
-new THREE.Vector3(300,15,-150),
-new THREE.Vector3(0,15,-150),
-new THREE.Vector3(0,15,-100)
-],0x00ffff);
-
-
-
-// ===== ลูกบอล =====
-function createBallFlow(curve,color){
-const balls=[];
-for(let i=0;i<4;i++){
-const b = new THREE.Mesh(
-new THREE.SphereGeometry(6,32,32),
-new THREE.MeshStandardMaterial({
-color:color,
-emissive:color,
-emissiveIntensity:0.8
-})
-);
-scene.add(b);
-balls.push({mesh:b,offset:i*0.25});
-}
-return function(progress){
-balls.forEach(obj=>{
-let t = progress-obj.offset;
-if(t<0)t=0;
-if(t>1)t=1;
-obj.mesh.position.copy(curve.getPointAt(t));
-});
-}
-}
-
-const flow1 = createBallFlow(curve1,0xffff00);
-const flow2 = createBallFlow(curve2,0x00ffff);
-const flow3 = createBallFlow(curve3,0x00ff00);
-const flow4 = createBallFlow(curve4,0x00ffff);
-
-let progress=0;
-let running=false;
-
-function startSystem(){
-running=true;
-progress=0;
-}
-
+// ===== Render Loop =====
 function animate(){
 requestAnimationFrame(animate);
-
-if(running){
-progress+=0.004;
-if(progress>1)progress=1;
-flow1(progress);
-flow2(progress);
-flow3(progress);
-flow4(progress);
-}
-
 controls.update();
 renderer.render(scene,camera);
 }
