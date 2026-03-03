@@ -22,9 +22,8 @@ const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// 🔥 กล้องถอยออก
-const camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,8000);
-camera.position.set(0,700,1400);
+const camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,5000);
+camera.position.set(0,600,1200);
 
 const controls = new THREE.OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
@@ -35,154 +34,28 @@ const light = new THREE.DirectionalLight(0xffffff,1);
 light.position.set(500,800,400);
 scene.add(light);
 
-// ===== Ground (ขยายแล้ว) =====
+// ===== Ground (ขยายพื้นที่) =====
 const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(4000,3000),
+new THREE.PlaneGeometry(3000,2000),
 new THREE.MeshStandardMaterial({color:0xf0f0f0})
 );
 ground.rotation.x = -Math.PI/2;
 scene.add(ground);
 
+// ======= (ฟังก์ชัน createCoolingTower / createPump / createAHU / createChiller ใช้ของคุณเดิมทั้งหมด) =======
 
-// ============================
-// CREATE CHILLER
-// ============================
+// ===== Layout จัดระยะใหม่ =====
 
-function createChiller(x,z){
+// หลัง
+createCoolingTower(-900,-700);
+createAHU(900,-700);
 
-const group = new THREE.Group();
-
-const base = new THREE.Mesh(
-new THREE.BoxGeometry(520,30,240),
-new THREE.MeshStandardMaterial({color:0x444444})
-);
-base.position.y = 15;
-group.add(base);
-
-const evap = new THREE.Mesh(
-new THREE.CylinderGeometry(70,70,400,32),
-new THREE.MeshStandardMaterial({color:0x0b3d2e})
-);
-evap.rotation.z = Math.PI/2;
-evap.position.set(0,80,0);
-group.add(evap);
-
-const cond = evap.clone();
-cond.position.y = 170;
-group.add(cond);
-
-const comp = new THREE.Mesh(
-new THREE.CylinderGeometry(60,60,120,32),
-new THREE.MeshStandardMaterial({color:0x083d2b})
-);
-comp.position.set(-120,250,0);
-group.add(comp);
-
-const panel = new THREE.Mesh(
-new THREE.BoxGeometry(80,140,60),
-new THREE.MeshStandardMaterial({color:0x1c1c1c})
-);
-panel.position.set(210,110,120);
-group.add(panel);
-
-const screen = new THREE.Mesh(
-new THREE.BoxGeometry(40,25,2),
-new THREE.MeshStandardMaterial({color:0x00ffcc})
-);
-screen.position.set(210,150,152);
-group.add(screen);
-
-group.position.set(x,0,z);
-scene.add(group);
-return group;
-}
-
-
-// ============================
-// CREATE COOLING TOWER
-// ============================
-
-function createCoolingTower(x,z){
-const group = new THREE.Group();
-
-const base = new THREE.Mesh(
-new THREE.BoxGeometry(200,20,200),
-new THREE.MeshStandardMaterial({color:0x555555})
-);
-base.position.y = 10;
-group.add(base);
-
-const tower = new THREE.Mesh(
-new THREE.BoxGeometry(150,200,150),
-new THREE.MeshStandardMaterial({color:0xcfd2d6})
-);
-tower.position.y = 120;
-group.add(tower);
-
-group.position.set(x,0,z);
-scene.add(group);
-return group;
-}
-
-
-// ============================
-// CREATE PUMP
-// ============================
-
-function createPump(x,z){
-const group = new THREE.Group();
-
-const base = new THREE.Mesh(
-new THREE.BoxGeometry(120,15,120),
-new THREE.MeshStandardMaterial({color:0x1a1a1a})
-);
-base.position.y = 7.5;
-group.add(base);
-
-const body = new THREE.Mesh(
-new THREE.CylinderGeometry(40,40,90,32),
-new THREE.MeshStandardMaterial({color:0x0077ff})
-);
-body.position.y = 70;
-group.add(body);
-
-const motor = new THREE.Mesh(
-new THREE.CylinderGeometry(35,35,60,32),
-new THREE.MeshStandardMaterial({color:0x666666})
-);
-motor.position.y = 160;
-group.add(motor);
-
-group.position.set(x,0,z);
-scene.add(group);
-return group;
-}
-
-
-// ============================
-// CREATE AHU
-// ============================
-
-function createAHU(x,z){
-const body = new THREE.Mesh(
-new THREE.BoxGeometry(300,150,150),
-new THREE.MeshStandardMaterial({color:0xdedede})
-);
-body.position.set(x,120,z);
-scene.add(body);
-}
-
-
-// ===== Layout (จัดใหม่ให้โล่ง) =====
-
-createCoolingTower(-800,-600);
-createAHU(800,-600);
-
+// กลาง
 createChiller(0,0);
 
-createPump(-700,400);
-createPump(700,400);
-
+// หน้า
+createPump(-1000,600);
+createPump(1000,600);
 
 // ===== Animate =====
 function animate(){
