@@ -63,51 +63,7 @@ return box;
 
 
 // ===== ฟังก์ชันสร้างปั๊ม =====
-function createPump(x,z){
-
-const group = new THREE.Group();
-
-// ฐาน
-const base = new THREE.Mesh(
-new THREE.BoxGeometry(140,20,100),
-new THREE.MeshStandardMaterial({color:0x222222})
-);
-base.position.set(0,10,0);
-group.add(base);
-
-// ตัวปั๊ม
-const body = new THREE.Mesh(
-new THREE.CylinderGeometry(40,40,100,32),
-new THREE.MeshStandardMaterial({color:0x0066ff})
-);
-body.rotation.z = Math.PI/2;
-body.position.set(0,50,0);
-group.add(body);
-
-// มอเตอร์
-const motor = new THREE.Mesh(
-new THREE.CylinderGeometry(35,35,90,32),
-new THREE.MeshStandardMaterial({color:0x555555})
-);
-motor.rotation.z = Math.PI/2;
-motor.position.set(-90,50,0);
-group.add(motor);
-
-// หน้าแปลน
-const flange = new THREE.Mesh(
-new THREE.CylinderGeometry(45,45,10,32),
-new THREE.MeshStandardMaterial({color:0x444444})
-);
-flange.rotation.z = Math.PI/2;
-flange.position.set(60,50,0);
-group.add(flange);
-
-group.position.set(x,0,z);
-scene.add(group);
-
-return group;
-}
-
+V
 
 // ===== Layout ตำแหน่งเดิม =====
 
