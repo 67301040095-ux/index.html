@@ -44,7 +44,7 @@ scene.add(ground);
 
 
 // ============================
-// CREATE COOLING TOWER
+// CREATE COOLING TOWER (ของเดิม)
 // ============================
 
 function createCoolingTower(x,z){
@@ -65,6 +65,15 @@ new THREE.MeshStandardMaterial({color:0xcfd2d6})
 tower.position.y = 120;
 group.add(tower);
 
+const frameGeo = new THREE.BoxGeometry(10,200,10);
+const frameMat = new THREE.MeshStandardMaterial({color:0x666666});
+
+[[75,120,75],[-75,120,75],[75,120,-75],[-75,120,-75]].forEach(p=>{
+const f = new THREE.Mesh(frameGeo,frameMat);
+f.position.set(p[0],p[1],p[2]);
+group.add(f);
+});
+
 group.position.set(x,0,z);
 scene.add(group);
 return group;
@@ -72,7 +81,7 @@ return group;
 
 
 // ============================
-// CREATE VERTICAL PUMP
+// CREATE PUMP (ของเดิม)
 // ============================
 
 function createPump(x,z){
@@ -100,7 +109,7 @@ return group;
 
 
 // ============================
-// CREATE AHU
+// CREATE AHU (ของเดิม)
 // ============================
 
 function createAHU(x,z){
@@ -121,17 +130,17 @@ return group;
 
 
 // ============================
-// CREATE CHILLER (เพิ่มอย่างเดียว)
+// CREATE CHILLER (เพิ่มใหม่อย่างเดียว)
 // ============================
 
 function createChiller(x,z){
 
 const group = new THREE.Group();
-group.scale.set(0.7,0.7,0.7);
+group.scale.set(0.6,0.6,0.6);
 
-// Lower Tank
 const tankMat = new THREE.MeshStandardMaterial({color:0x0b3d91});
 
+// ถังล่าง
 const lowerTank = new THREE.Mesh(
 new THREE.CylinderGeometry(70,70,300,32),
 tankMat
@@ -140,7 +149,7 @@ lowerTank.rotation.z = Math.PI/2;
 lowerTank.position.y = 80;
 group.add(lowerTank);
 
-// Upper Tank
+// ถังบน
 const upperTank = lowerTank.clone();
 upperTank.position.y = 200;
 group.add(upperTank);
@@ -182,7 +191,7 @@ createCoolingTower(-300,-200);
 createAHU(300,-200);
 createPump(-300,0);
 createPump(300,0);
-createChiller(0,200);   // เพิ่มชิลเลอร์ตรงกลางด้านหลัง
+createChiller(0,200);
 
 
 // ===== Animate =====
