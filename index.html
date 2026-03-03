@@ -9,8 +9,9 @@ body { margin:0; overflow:hidden; }
 </head>
 <body>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+<!-- THREE r128 (เสถียร) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
 <script>
 
@@ -25,14 +26,14 @@ window.innerWidth/window.innerHeight,
 0.1,
 5000
 );
-camera.position.set(600,400,600);
+camera.position.set(700,500,700);
 
 // ================= RENDERER =================
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// ================= CONTROLS (360° หมุนได้) =================
+// ================= CONTROLS =================
 const controls = new THREE.OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
 
@@ -99,13 +100,12 @@ scene.add(tank);
 // =====================================================
 // ======================= PIPE =========================
 // =====================================================
-function createPipe(x,z,length,rotateY=0){
+function createPipe(x,z,length){
 const pipe = new THREE.Mesh(
 new THREE.CylinderGeometry(15,15,length,16),
 new THREE.MeshStandardMaterial({color:0x888888})
 );
 pipe.rotation.z = Math.PI/2;
-pipe.rotation.y = rotateY;
 pipe.position.set(x,120,z);
 scene.add(pipe);
 }
@@ -178,7 +178,6 @@ fanGroup.add(blade);
 }
 
 group.add(fanGroup);
-
 group.position.set(x,0,z);
 scene.add(group);
 
@@ -186,18 +185,15 @@ return fanGroup;
 }
 
 // =====================================================
-// ================= CREATE ALL EQUIPMENT ===============
+// ================= CREATE EQUIPMENT ===================
 // =====================================================
-
 createTank(-400,0);
 createPump(-150,0);
 createPipe(-280,0,250);
-createCoolingTower(250,0);
-
-const fan = createCoolingTower(600,0); // อีกตัวให้เห็นหลายตัว
+const fan = createCoolingTower(300,0);
 
 // =====================================================
-// ================= ANIMATE ============================
+// ================= ANIMATION ==========================
 // =====================================================
 function animate(){
 requestAnimationFrame(animate);
