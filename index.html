@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+e<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -69,60 +69,75 @@ const group = new THREE.Group();
 
 // ===== ฐาน =====
 const base = new THREE.Mesh(
-new THREE.BoxGeometry(120,20,120),
-new THREE.MeshStandardMaterial({color:0x222222})
+new THREE.BoxGeometry(120,15,120),
+new THREE.MeshStandardMaterial({color:0x1a1a1a})
 );
-base.position.set(0,10,0);
+base.position.set(0,7.5,0);
 group.add(base);
 
 // ===== หน้าแปลนล่าง =====
 const flangeBottom = new THREE.Mesh(
-new THREE.CylinderGeometry(45,45,10,32),
+new THREE.CylinderGeometry(50,50,12,32),
 new THREE.MeshStandardMaterial({color:0x444444})
 );
-flangeBottom.position.set(0,20,0);
+flangeBottom.position.set(0,21,0);
 group.add(flangeBottom);
 
-// ===== ตัวปั๊ม =====
+// ===== ตัวเรือนปั๊ม (สั้นลง) =====
 const body = new THREE.Mesh(
-new THREE.CylinderGeometry(35,35,120,32),
-new THREE.MeshStandardMaterial({color:0x0066ff})
+new THREE.CylinderGeometry(40,40,90,32),
+new THREE.MeshStandardMaterial({color:0x0077ff})
 );
-body.position.set(0,90,0);
+body.position.set(0,78,0);
 group.add(body);
 
-// ===== มอเตอร์ด้านบน =====
+// ===== คอคัปปลิ้ง =====
+const coupling = new THREE.Mesh(
+new THREE.CylinderGeometry(25,25,20,32),
+new THREE.MeshStandardMaterial({color:0x333333})
+);
+coupling.position.set(0,133,0);
+group.add(coupling);
+
+// ===== มอเตอร์ (สั้น + อ้วนขึ้น) =====
 const motor = new THREE.Mesh(
-new THREE.CylinderGeometry(30,30,55,32),
+new THREE.CylinderGeometry(35,35,60,32),
 new THREE.MeshStandardMaterial({color:0x555555})
 );
-motor.position.set(0,140,0);
+motor.position.set(0,173,0);
 group.add(motor);
 
-// ===== ท่อออกด้านขวา (สั้นลง) =====
-const outletRight = new THREE.Mesh(
-new THREE.CylinderGeometry(20,20,40,32), // 40 = สั้นลง
-new THREE.MeshStandardMaterial({color:0x888888})
+// ===== ฝาครอบท้ายมอเตอร์ =====
+const motorCap = new THREE.Mesh(
+new THREE.CylinderGeometry(30,30,15,32),
+new THREE.MeshStandardMaterial({color:0x444444})
 );
-outletRight.rotation.z = Math.PI/2;
-outletRight.position.set(45,90,0); // ขยับให้พอดี
-group.add(outletRight);
+motorCap.position.set(0,210,0);
+group.add(motorCap);
 
-// ===== ท่อออกด้านซ้าย (เพิ่มใหม่) =====
+// ===== ท่อซ้าย =====
 const outletLeft = new THREE.Mesh(
-new THREE.CylinderGeometry(20,20,40,32),
-new THREE.MeshStandardMaterial({color:0x888888})
+new THREE.CylinderGeometry(18,18,45,32),
+new THREE.MeshStandardMaterial({color:0x999999})
 );
 outletLeft.rotation.z = Math.PI/2;
-outletLeft.position.set(-45,90,0);
+outletLeft.position.set(-55,78,0);
 group.add(outletLeft);
+
+// ===== ท่อขวา =====
+const outletRight = new THREE.Mesh(
+new THREE.CylinderGeometry(18,18,45,32),
+new THREE.MeshStandardMaterial({color:0x999999})
+);
+outletRight.rotation.z = Math.PI/2;
+outletRight.position.set(55,78,0);
+group.add(outletRight);
 
 group.position.set(x,0,z);
 scene.add(group);
 
 return group;
 }
-
 
 // ===== Layout =====
 
