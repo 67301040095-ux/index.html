@@ -158,30 +158,6 @@ grill.position.set(0,45 + i*12,62);
 group.add(grill);
 }
 
-// ===== พัดลมด้านหน้า =====
-const fanGroup = new THREE.Group();
-
-// วงแหวนพัดลม
-const fanRing = new THREE.Mesh(
-    new THREE.RingGeometry(35,50,32),
-    new THREE.MeshStandardMaterial({
-        color:0x222222,
-        side:THREE.DoubleSide
-    })
-);
-fanRing.position.z = 63;
-fanGroup.add(fanRing);
-
-// ใบพัด
-const bladeGeo = new THREE.BoxGeometry(10,3,70);
-const bladeMat = new THREE.MeshStandardMaterial({color:0x222222});
-
-for(let i=0;i<4;i++){
-    const blade = new THREE.Mesh(bladeGeo,bladeMat);
-    blade.rotation.z = Math.PI/2 * i;
-    blade.position.z = 63;
-    fanGroup.add(blade);
-}
 
 fanGroup.position.y = 85;
 group.add(fanGroup);
