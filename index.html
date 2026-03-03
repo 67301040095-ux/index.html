@@ -2,9 +2,9 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>HVAC Equipment Real Shape</title>
+<title>HVAC Realistic Equipment</title>
 <style>
-body { margin:0; overflow:hidden; }
+body{margin:0;overflow:hidden;}
 </style>
 </head>
 <body>
@@ -14,119 +14,167 @@ body { margin:0; overflow:hidden; }
 
 <script>
 
-// ===== BASIC SETUP =====
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xe6f2ff);
+// ===== BASIC =====
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xe6f2ff);
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 5000);
-camera.position.set(1000,600,1000);
+const camera=new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,5000);
+camera.position.set(1200,700,1200);
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
+const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const controls = new THREE.OrbitControls(camera,renderer.domElement);
-controls.enableDamping = true;
+const controls=new THREE.OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;
 
 scene.add(new THREE.AmbientLight(0xffffff,0.6));
-const light = new THREE.DirectionalLight(0xffffff,0.8);
-light.position.set(500,800,500);
+const light=new THREE.DirectionalLight(0xffffff,0.8);
+light.position.set(600,900,600);
 scene.add(light);
 
-// ===== GROUND =====
-const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(4000,4000),
+// Ground
+const ground=new THREE.Mesh(
+new THREE.PlaneGeometry(5000,5000),
 new THREE.MeshStandardMaterial({color:0xdddddd})
 );
-ground.rotation.x = -Math.PI/2;
+ground.rotation.x=-Math.PI/2;
 scene.add(ground);
 
-// ===== FUNCTION =====
-function createBox(x,z,w,h,d,color){
-const mesh = new THREE.Mesh(
-new THREE.BoxGeometry(w,h,d),
-new THREE.MeshStandardMaterial({color})
+// ===== COOLING TOWER (Hyperbolic) =====
+const ctGroup=new THREE.Group();
+
+const towerGeometry=new THREE.CylinderGeometry(200,250,500,64,1,true);
+const towerMaterial=new THREE.MeshStandardMaterial({
+color:0x777777,
+side:THREE.DoubleSide
+});
+const tower=new THREE.Mesh(towerGeometry,towerMaterial);
+tower.position.y=250;
+ctGroup.add(tower);
+
+// ช่องลม
+for(let i=0;i<6;i++){
+const vent=new THREE.Mesh(
+new THREE.BoxGeometry(20,150,120),
+new THREE.MeshStandardMaterial({color:0x555555})
 );
-mesh.position.set(x,h/2,z);
-scene.add(mesh);
-return mesh;
+vent.position.set(
+Math.cos(i*Math.PI/3)*220,
+150,
+Math.sin(i*Math.PI/3)*220
+);
+vent.lookAt(0,150,0);
+ctGroup.add(vent);
 }
 
-function createVerticalPump(x,z,color){
-const group = new THREE.Group();
+// พัดลมบน
+const fanBase=new THREE.Mesh(
+new THREE.CylinderGeometry(120,120,20,32),
+new THREE.MeshStandardMaterial({color:0x222222})
+);
+fanBase.position.y=520;
+ctGroup.add(fanBase);
+
+const blades=new THREE.Group();
+for(let i=0;i<4;i++){
+const blade=new THREE.Mesh(
+new THREE.BoxGeometry(220,12,30),
+new THREE.MeshStandardMaterial({color:0xffffff})
+);
+blade.rotation.y=i*(Math.PI/2);
+blades.add(blade);
+}
+blades.position.y=530;
+ctGroup.add(blades);
+
+ctGroup.position.set(-1500,0,0);
+scene.add(ctGroup);
+
+// ===== VERTICAL PUMP WITH FLANGE =====
+function createPump(x,z,color){
+const group=new THREE.Group();
 
 // ฐาน
-const base = new THREE.Mesh(
-new THREE.CylinderGeometry(80,80,40,32),
+const base=new THREE.Mesh(
+new THREE.CylinderGeometry(100,100,40,32),
 new THREE.MeshStandardMaterial({color:0x333333})
 );
-base.position.y = 20;
+base.position.y=20;
 group.add(base);
 
-// ตัวปั้มแนวตั้ง
-const body = new THREE.Mesh(
-new THREE.CylinderGeometry(40,40,220,32),
+// ตัวปั้ม
+const body=new THREE.Mesh(
+new THREE.CylinderGeometry(50,50,300,32),
 new THREE.MeshStandardMaterial({color})
 );
-body.position.y = 150;
+body.position.y=190;
 group.add(body);
+
+// หน้าแปลนเข้า
+const flange1=new THREE.Mesh(
+new THREE.CylinderGeometry(70,70,20,32),
+new THREE.MeshStandardMaterial({color:0x444444})
+);
+flange1.rotation.z=Math.PI/2;
+flange1.position.set(-80,150,0);
+group.add(flange1);
+
+// หน้าแปลนออก
+const flange2=flange1.clone();
+flange2.position.set(80,150,0);
+group.add(flange2);
 
 group.position.set(x,0,z);
 scene.add(group);
 }
 
-// ===== EQUIPMENT =====
+// CDP
+createPump(-700,0,0xaa0000);
 
-// CT (Cooling Tower ทรงสี่เหลี่ยม + พัดลมบน)
-const ct = createBox(-1200,0,350,450,350,0x666666);
-
-// พัดลม CT
-const fanGroup = new THREE.Group();
-
-const fanBase = new THREE.Mesh(
-new THREE.CylinderGeometry(100,100,20,32),
-new THREE.MeshStandardMaterial({color:0x222222})
+// CHILLER
+const chiller=new THREE.Mesh(
+new THREE.BoxGeometry(600,300,350),
+new THREE.MeshStandardMaterial({color:0x999999})
 );
-fanBase.position.y = 460;
-fanGroup.add(fanBase);
+chiller.position.set(0,150,0);
+scene.add(chiller);
 
-// ใบพัด
-for(let i=0;i<4;i++){
-const blade = new THREE.Mesh(
-new THREE.BoxGeometry(200,12,30),
-new THREE.MeshStandardMaterial({color:0xffffff})
+// CHP
+createPump(700,0,0x0033aa);
+
+// AHU (มีช่องลม)
+const ahuGroup=new THREE.Group();
+const ahuBody=new THREE.Mesh(
+new THREE.BoxGeometry(500,300,300),
+new THREE.MeshStandardMaterial({color:0x777777})
 );
-blade.position.y = 470;
-blade.rotation.y = i*(Math.PI/2);
-fanGroup.add(blade);
+ahuBody.position.y=150;
+ahuGroup.add(ahuBody);
+
+for(let i=-1;i<=1;i++){
+const grill=new THREE.Mesh(
+new THREE.BoxGeometry(20,200,200),
+new THREE.MeshStandardMaterial({color:0x555555})
+);
+grill.position.set(250,150,i*70);
+ahuGroup.add(grill);
 }
 
-fanGroup.position.set(-1200,0,0);
-scene.add(fanGroup);
+ahuGroup.position.set(1500,0,0);
+scene.add(ahuGroup);
 
-// CDP (ปั้มแนวตั้ง สีแดง)
-createVerticalPump(-600,0,0xaa0000);
-
-// CH (Chiller)
-createBox(0,0,450,250,300,0x999999);
-
-// CHP (ปั้มแนวตั้ง สีน้ำเงิน)
-createVerticalPump(600,0,0x0033aa);
-
-// AHU
-createBox(1200,0,400,250,300,0x777777);
-
-// ===== ANIMATE =====
+// ===== ANIMATION =====
 function animate(){
 requestAnimationFrame(animate);
 controls.update();
-fanGroup.rotation.y += 0.05;
+blades.rotation.y+=0.05;
 renderer.render(scene,camera);
 }
 animate();
 
 window.addEventListener('resize',()=>{
-camera.aspect = window.innerWidth/window.innerHeight;
+camera.aspect=window.innerWidth/window.innerHeight;
 camera.updateProjectionMatrix();
 renderer.setSize(window.innerWidth,window.innerHeight);
 });
