@@ -2,213 +2,134 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>PLANT CONTROL ROOM</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>HVAC Equipment Real Shape</title>
 <style>
-body{margin:0;font-family:Arial;background:#111;color:#0f0}
-#login,#panel{position:absolute;top:0;left:0;width:100%;height:100%;}
-#login{
-display:flex;justify-content:center;align-items:center;
-background:#000;color:white;flex-direction:column;
-}
-#panel{display:none;padding:10px;}
-button{margin:5px;padding:6px 10px;}
-.alarm{color:red;font-weight:bold;animation:blink 1s infinite;}
-@keyframes blink{50%{opacity:0.3}}
-#logBox{
-background:#000;
-height:120px;
-overflow:auto;
-padding:5px;
-font-size:12px;
-border:1px solid #0f0;
-}
-canvas{background:#222;margin-top:5px}
+body { margin:0; overflow:hidden; }
 </style>
 </head>
 <body>
 
-<div id="login">
-<h2>PLANT CONTROL ROOM LOGIN</h2>
-<input id="user" placeholder="username"><br><br>
-<button onclick="login()">Login</button>
-</div>
-
-<div id="panel">
-<h3>HVAC CONTROL ROOM</h3>
-
-Role: <span id="role"></span><br>
-Mode: <span id="mode">MANUAL</span><br>
-CDP: <span id="cdpStat">STOP</span><br>
-CHP: <span id="chpStat">STOP</span><br>
-Fan: <span id="fanStat">RUN</span><br>
-Cond Temp: <span id="condTemp">35</span> °C<br>
-Chill Temp: <span id="chillTemp">7</span> °C<br>
-Pressure: <span id="pressure">0</span> bar<br>
-
-<div id="alarmBox"></div>
-
-<button onclick="toggleMode()">AUTO/MANUAL</button>
-<button onclick="toggleCDP()">CDP</button>
-<button onclick="toggleCHP()">CHP</button>
-<button onclick="toggleFan()">Fan</button>
-<button id="faultBtn" onclick="simulateFault()">Sim Fault</button>
-<button onclick="resetAlarm()">Reset Alarm</button>
-<button onclick="exportLog()">Export Log CSV</button>
-
-<h4>Trend</h4>
-<canvas id="trend" width="400" height="150"></canvas>
-
-<h4>Event Log</h4>
-<div id="logBox"></div>
-
-</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
 <script>
 
-let role="";
-let mode="MANUAL";
-let cdp=false;
-let chp=false;
-let fanOn=true;
-let condTemp=35;
-let chillTemp=7;
-let pressure=0;
-let alarm="";
-let log=[];
+// ===== BASIC SETUP =====
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xe6f2ff);
 
-// LOGIN
-function login(){
-role=document.getElementById("user").value.toLowerCase();
-if(role==="operator"||role==="engineer"){
-document.getElementById("login").style.display="none";
-document.getElementById("panel").style.display="block";
-document.getElementById("role").innerText=role.toUpperCase();
-if(role==="operator"){
-document.getElementById("faultBtn").disabled=true;
-}
-addLog("User logged in: "+role);
-}
-}
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 5000);
+camera.position.set(1000,600,1000);
 
-// LOG
-function addLog(text){
-let time=new Date().toLocaleTimeString();
-let entry=time+" - "+text;
-log.push(entry);
-let box=document.getElementById("logBox");
-box.innerHTML+=entry+"<br>";
-box.scrollTop=box.scrollHeight;
-}
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-// EXPORT CSV
-function exportLog(){
-let csv="Time,Event\n";
-log.forEach(l=>csv+=l+"\n");
-let blob=new Blob([csv],{type:"text/csv"});
-let a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download="plant_log.csv";
-a.click();
+const controls = new THREE.OrbitControls(camera,renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0xffffff,0.6));
+const light = new THREE.DirectionalLight(0xffffff,0.8);
+light.position.set(500,800,500);
+scene.add(light);
+
+// ===== GROUND =====
+const ground = new THREE.Mesh(
+new THREE.PlaneGeometry(4000,4000),
+new THREE.MeshStandardMaterial({color:0xdddddd})
+);
+ground.rotation.x = -Math.PI/2;
+scene.add(ground);
+
+// ===== FUNCTION =====
+function createBox(x,z,w,h,d,color){
+const mesh = new THREE.Mesh(
+new THREE.BoxGeometry(w,h,d),
+new THREE.MeshStandardMaterial({color})
+);
+mesh.position.set(x,h/2,z);
+scene.add(mesh);
+return mesh;
 }
 
-// CONTROL
-function toggleMode(){
-mode=mode==="MANUAL"?"AUTO":"MANUAL";
-addLog("Mode changed to "+mode);
-}
-function toggleCDP(){
-if(mode==="MANUAL"){cdp=!cdp;addLog("CDP toggled");}
-}
-function toggleCHP(){
-if(mode==="MANUAL"){chp=!chp;addLog("CHP toggled");}
-}
-function toggleFan(){
-if(mode==="MANUAL"){fanOn=!fanOn;addLog("Fan toggled");}
-}
-function simulateFault(){
-condTemp=60;
-alarm="⚠ HIGH PRESSURE TRIP";
-addLog("Fault simulated");
-}
-function resetAlarm(){
-alarm="";
-addLog("Alarm reset");
+function createVerticalPump(x,z,color){
+const group = new THREE.Group();
+
+// ฐาน
+const base = new THREE.Mesh(
+new THREE.CylinderGeometry(80,80,40,32),
+new THREE.MeshStandardMaterial({color:0x333333})
+);
+base.position.y = 20;
+group.add(base);
+
+// ตัวปั้มแนวตั้ง
+const body = new THREE.Mesh(
+new THREE.CylinderGeometry(40,40,220,32),
+new THREE.MeshStandardMaterial({color})
+);
+body.position.y = 150;
+group.add(body);
+
+group.position.set(x,0,z);
+scene.add(group);
 }
 
-// AUTO
-function autoLogic(){
-if(mode==="AUTO"){
-cdp=true;
-chp=true;
-fanOn=true;
-}
+// ===== EQUIPMENT =====
+
+// CT (Cooling Tower ทรงสี่เหลี่ยม + พัดลมบน)
+const ct = createBox(-1200,0,350,450,350,0x666666);
+
+// พัดลม CT
+const fanGroup = new THREE.Group();
+
+const fanBase = new THREE.Mesh(
+new THREE.CylinderGeometry(100,100,20,32),
+new THREE.MeshStandardMaterial({color:0x222222})
+);
+fanBase.position.y = 460;
+fanGroup.add(fanBase);
+
+// ใบพัด
+for(let i=0;i<4;i++){
+const blade = new THREE.Mesh(
+new THREE.BoxGeometry(200,12,30),
+new THREE.MeshStandardMaterial({color:0xffffff})
+);
+blade.position.y = 470;
+blade.rotation.y = i*(Math.PI/2);
+fanGroup.add(blade);
 }
 
-// PROCESS
-function process(){
-if(cdp){condTemp-=0.05;pressure=3;}
-else{condTemp+=0.08;pressure=0;}
+fanGroup.position.set(-1200,0,0);
+scene.add(fanGroup);
 
-if(chp){chillTemp-=0.02;}
-else{chillTemp+=0.05;}
+// CDP (ปั้มแนวตั้ง สีแดง)
+createVerticalPump(-600,0,0xaa0000);
 
-if(condTemp>50){
-alarm="⚠ HIGH PRESSURE TRIP";
-cdp=false;fanOn=false;
-addLog("High Pressure Trip");
-}
-if(chillTemp<3){
-alarm="⚠ LOW TEMP TRIP";
-chp=false;
-addLog("Low Temp Trip");
-}
-}
+// CH (Chiller)
+createBox(0,0,450,250,300,0x999999);
 
-// UI
-function updateUI(){
-document.getElementById("mode").innerText=mode;
-document.getElementById("cdpStat").innerText=cdp?"RUN":"STOP";
-document.getElementById("chpStat").innerText=chp?"RUN":"STOP";
-document.getElementById("fanStat").innerText=fanOn?"RUN":"STOP";
-document.getElementById("condTemp").innerText=condTemp.toFixed(1);
-document.getElementById("chillTemp").innerText=chillTemp.toFixed(1);
-document.getElementById("pressure").innerText=pressure.toFixed(1);
-document.getElementById("alarmBox").innerHTML=
-alarm?'<div class="alarm">'+alarm+'</div>':"";
-}
+// CHP (ปั้มแนวตั้ง สีน้ำเงิน)
+createVerticalPump(600,0,0x0033aa);
 
-// TREND
-const ctx=document.getElementById("trend").getContext("2d");
-const chart=new Chart(ctx,{
-type:"line",
-data:{labels:[],datasets:[
-{label:"Cond Temp",data:[],borderColor:"red"},
-{label:"Chill Temp",data:[],borderColor:"cyan"}
-]},
-options:{responsive:false,animation:false}
+// AHU
+createBox(1200,0,400,250,300,0x777777);
+
+// ===== ANIMATE =====
+function animate(){
+requestAnimationFrame(animate);
+controls.update();
+fanGroup.rotation.y += 0.05;
+renderer.render(scene,camera);
+}
+animate();
+
+window.addEventListener('resize',()=>{
+camera.aspect = window.innerWidth/window.innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(window.innerWidth,window.innerHeight);
 });
-function updateTrend(){
-if(chart.data.labels.length>25){
-chart.data.labels.shift();
-chart.data.datasets[0].data.shift();
-chart.data.datasets[1].data.shift();
-}
-chart.data.labels.push("");
-chart.data.datasets[0].data.push(condTemp);
-chart.data.datasets[1].data.push(chillTemp);
-chart.update();
-}
-
-// LOOP
-function loop(){
-autoLogic();
-process();
-updateUI();
-updateTrend();
-requestAnimationFrame(loop);
-}
-loop();
 
 </script>
 </body>
