@@ -2,9 +2,14 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>HVAC System - Full Layout</title>
+<title>HVAC Pro Layout</title>
 <style>
-body { margin:0; overflow:hidden; }
+body { margin:0; overflow:hidden; font-family:Arial;}
+.label{
+position:absolute;
+color:black;
+font-weight:bold;
+}
 </style>
 </head>
 <body>
@@ -17,8 +22,8 @@ body { margin:0; overflow:hidden; }
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xbfdfff);
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 5000);
-camera.position.set(900,600,900);
+const camera = new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,5000);
+camera.position.set(1200,700,1200);
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
@@ -28,14 +33,12 @@ const controls = new THREE.OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
 
 scene.add(new THREE.AmbientLight(0xffffff,0.4));
-
 const light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(500,800,500);
+light.position.set(600,900,600);
 scene.add(light);
 
-// Ground
 const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(5000,5000),
+new THREE.PlaneGeometry(6000,6000),
 new THREE.MeshStandardMaterial({color:0xdddddd})
 );
 ground.rotation.x = -Math.PI/2;
@@ -43,112 +46,143 @@ scene.add(ground);
 
 // ---------- FUNCTIONS ----------
 
-function pipe(x,y,z,length,color,rotateZ=true){
+function pipeH(x,y,z,len,color){
 const mesh = new THREE.Mesh(
-new THREE.CylinderGeometry(18,18,length,16),
-new THREE.MeshStandardMaterial({color:color})
+new THREE.CylinderGeometry(20,20,len,16),
+new THREE.MeshStandardMaterial({color})
 );
-if(rotateZ) mesh.rotation.z = Math.PI/2;
+mesh.rotation.z = Math.PI/2;
 mesh.position.set(x,y,z);
 scene.add(mesh);
 }
 
-function pump(x,z,color){
-const group = new THREE.Group();
-
-const base = new THREE.Mesh(
-new THREE.CylinderGeometry(60,60,40,32),
-new THREE.MeshStandardMaterial({color:0x333333})
+function pipeV(x,y,z,len,color){
+const mesh = new THREE.Mesh(
+new THREE.CylinderGeometry(20,20,len,16),
+new THREE.MeshStandardMaterial({color})
 );
-base.position.y = 20;
-group.add(base);
+mesh.position.set(x,y,z);
+scene.add(mesh);
+}
 
-const body = new THREE.Mesh(
-new THREE.CylinderGeometry(35,35,140,32),
-new THREE.MeshStandardMaterial({color:color})
+function elbow(x,y,z,color){
+const mesh = new THREE.Mesh(
+new THREE.TorusGeometry(20,20,16,50,Math.PI/2),
+new THREE.MeshStandardMaterial({color})
 );
-body.position.y = 110;
-group.add(body);
+mesh.rotation.x = Math.PI/2;
+mesh.position.set(x,y,z);
+scene.add(mesh);
+}
 
-group.position.set(x,0,z);
-scene.add(group);
+function valve(x,y,z,color){
+const mesh = new THREE.Mesh(
+new THREE.SphereGeometry(25,16,16),
+new THREE.MeshStandardMaterial({color})
+);
+mesh.position.set(x,y,z);
+scene.add(mesh);
 }
 
 function boxEquip(x,z,w,h,d,color){
 const mesh = new THREE.Mesh(
 new THREE.BoxGeometry(w,h,d),
-new THREE.MeshStandardMaterial({color:color})
+new THREE.MeshStandardMaterial({color})
 );
 mesh.position.set(x,h/2,z);
 scene.add(mesh);
 return mesh;
 }
 
+function label(text,x,y,z){
+const div=document.createElement("div");
+div.className="label";
+div.textContent=text;
+document.body.appendChild(div);
+
+function update(){
+const vector=new THREE.Vector3(x,y,z);
+vector.project(camera);
+div.style.left=(vector.x*0.5+0.5)*window.innerWidth+"px";
+div.style.top=(-vector.y*0.5+0.5)*window.innerHeight+"px";
+}
+return update;
+}
+
 // ---------- EQUIPMENT ----------
 
-// CT
-const ct = boxEquip(-700,0,250,300,250,0x666666);
+const ct=boxEquip(-1000,0,300,350,300,0x666666);
+const ch=boxEquip(0,0,400,250,250,0x999999);
+const ahu=boxEquip(1200,0,350,250,250,0x777777);
 
-// CT Fan
-const fanGroup = new THREE.Group();
-const fanBase = new THREE.Mesh(
-new THREE.CylinderGeometry(80,80,15,32),
-new THREE.MeshStandardMaterial({color:0x222222})
-);
-fanBase.position.y = 310;
-fanGroup.add(fanBase);
-
-for(let i=0;i<4;i++){
-const blade = new THREE.Mesh(
-new THREE.BoxGeometry(150,10,25),
-new THREE.MeshStandardMaterial({color:0xffffff})
-);
-blade.position.y = 320;
-blade.rotation.y = i*(Math.PI/2);
-fanGroup.add(blade);
-}
-fanGroup.position.set(-700,0,0);
-scene.add(fanGroup);
-
-// CHILLER
-boxEquip(0,0,350,200,200,0x999999);
-
-// AHU
-boxEquip(800,0,300,200,200,0x777777);
-
-// CDP (Red - Condenser Pump)
-pump(-400,-150,0xff0000);
-pump(-400,150,0xaa0000);
-
-// CHP (Blue - Chilled Pump)
-pump(300,-150,0x0066ff);
-pump(300,150,0x0033aa);
+// Pumps
+boxEquip(-600,-250,120,200,120,0xaa0000); // CDP1
+boxEquip(-600,250,120,200,120,0xff0000);  // CDP2
+boxEquip(500,-250,120,200,120,0x0033aa);  // CHP1
+boxEquip(500,250,120,200,120,0x0066ff);   // CHP2
 
 // ---------- PIPING ----------
 
-// 🔴 Condenser Loop (Red)
-pipe(-550,150,0,300,0xff0000); // CT → CDP
-pipe(-200,150,0,400,0xff0000); // CDP → CH
-pipe(-550,120,0,300,0xaa0000); // Return
-pipe(-200,120,0,400,0xaa0000);
+// 🔴 Condenser Loop
+pipeH(-850,200,0,300,0xff0000);
+elbow(-700,200,0,0xff0000);
+pipeV(-700,350,0,300,0xff0000);
+valve(-850,200,0,0xff0000);
 
-// 🔵 Chilled Loop (Blue)
-pipe(150,150,0,400,0x0066ff); // CH → CHP
-pipe(550,150,0,400,0x0066ff); // CHP → AHU
-pipe(150,120,0,400,0x0033aa); // Return
-pipe(550,120,0,400,0x0033aa);
+pipeH(-400,200,0,400,0xaa0000);
+valve(-200,200,0,0xaa0000);
 
-// ---------- ANIMATE ----------
+// 🔵 Chilled Loop
+pipeH(250,200,0,400,0x0066ff);
+elbow(450,200,0,0x0066ff);
+pipeV(450,350,0,300,0x0066ff);
+valve(250,200,0,0x0066ff);
+
+pipeH(800,200,0,400,0x0033aa);
+valve(1000,200,0,0x0033aa);
+
+// ---------- CT FAN ----------
+const fanGroup=new THREE.Group();
+const fanBase=new THREE.Mesh(
+new THREE.CylinderGeometry(90,90,20,32),
+new THREE.MeshStandardMaterial({color:0x222222})
+);
+fanBase.position.y=370;
+fanGroup.add(fanBase);
+
+for(let i=0;i<4;i++){
+const blade=new THREE.Mesh(
+new THREE.BoxGeometry(180,12,30),
+new THREE.MeshStandardMaterial({color:0xffffff})
+);
+blade.position.y=380;
+blade.rotation.y=i*(Math.PI/2);
+fanGroup.add(blade);
+}
+fanGroup.position.set(-1000,0,0);
+scene.add(fanGroup);
+
+// ---------- LABELS ----------
+const labels=[
+label("CT",-1000,400,0),
+label("CH",0,300,0),
+label("AHU",1200,300,0),
+label("CDP",-600,250,-250),
+label("CHP",500,250,-250)
+];
+
+// ---------- ANIMATION ----------
 function animate(){
 requestAnimationFrame(animate);
 controls.update();
-fanGroup.rotation.y += 0.08;
+fanGroup.rotation.y+=0.08;
+labels.forEach(fn=>fn());
 renderer.render(scene,camera);
 }
 animate();
 
 window.addEventListener('resize',()=>{
-camera.aspect = window.innerWidth/window.innerHeight;
+camera.aspect=window.innerWidth/window.innerHeight;
 camera.updateProjectionMatrix();
 renderer.setSize(window.innerWidth,window.innerHeight);
 });
