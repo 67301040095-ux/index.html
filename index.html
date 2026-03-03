@@ -72,17 +72,69 @@ return group;
 
 
 // ============================
-// CREATE BOX (CH)
+// CREATE CHILLER (แก้ใหม่)
 // ============================
 
-function createBox(x,z,color,height=120,width=120,depth=120){
-const box = new THREE.Mesh(
-new THREE.BoxGeometry(width,height,depth),
-new THREE.MeshStandardMaterial({color:color})
+function createChiller(x,z){
+
+const group = new THREE.Group();
+
+// ===== ฐาน =====
+const base = new THREE.Mesh(
+new THREE.BoxGeometry(380,20,170),
+new THREE.MeshStandardMaterial({color:0x444444})
 );
-box.position.set(x,height/2,z);
-scene.add(box);
-return box;
+base.position.y = 10;
+group.add(base);
+
+// ===== ตัวเครื่องหลัก =====
+const body = new THREE.Mesh(
+new THREE.BoxGeometry(360,150,150),
+new THREE.MeshStandardMaterial({color:0xcfd2d6})
+);
+body.position.y = 95;
+group.add(body);
+
+// ===== เส้นแบ่ง Section =====
+for(let i=0;i<3;i++){
+const line = new THREE.Mesh(
+new THREE.BoxGeometry(4,130,150),
+new THREE.MeshStandardMaterial({color:0xaaaaaa})
+);
+line.position.set(-120 + i*120,95,0);
+group.add(line);
+}
+
+// ===== คอมเพรสเซอร์ 2 ลูก =====
+const compGeo = new THREE.CylinderGeometry(40,40,110,32);
+const compMat = new THREE.MeshStandardMaterial({color:0x222222});
+
+const comp1 = new THREE.Mesh(compGeo,compMat);
+comp1.rotation.z = Math.PI/2;
+comp1.position.set(-90,95,0);
+group.add(comp1);
+
+const comp2 = comp1.clone();
+comp2.position.x = 90;
+group.add(comp2);
+
+// ===== ท่อน้ำเข้า =====
+const pipeIn = new THREE.Mesh(
+new THREE.CylinderGeometry(18,18,90,32),
+new THREE.MeshStandardMaterial({color:0x0077ff})
+);
+pipeIn.rotation.z = Math.PI/2;
+pipeIn.position.set(-210,95,0);
+group.add(pipeIn);
+
+// ===== ท่อน้ำออก =====
+const pipeOut = pipeIn.clone();
+pipeOut.position.x = 210;
+group.add(pipeOut);
+
+group.position.set(x,0,z);
+scene.add(group);
+return group;
 }
 
 
@@ -115,14 +167,13 @@ return group;
 
 
 // ============================
-// CREATE AHU (NEW)
+// CREATE AHU (ของคุณเดิม)
 // ============================
 
 function createAHU(x,z){
 
 const group = new THREE.Group();
 
-// ===== ฐาน C-Channel =====
 const base = new THREE.Mesh(
 new THREE.BoxGeometry(240,20,140),
 new THREE.MeshStandardMaterial({color:0x444444})
@@ -130,7 +181,6 @@ new THREE.MeshStandardMaterial({color:0x444444})
 base.position.y = 10;
 group.add(base);
 
-// ===== ตัวเครื่องหลัก =====
 const body = new THREE.Mesh(
 new THREE.BoxGeometry(220,130,120),
 new THREE.MeshStandardMaterial({color:0xdedede})
@@ -138,7 +188,6 @@ new THREE.MeshStandardMaterial({color:0xdedede})
 body.position.y = 85;
 group.add(body);
 
-// ===== แบ่ง Panel ด้านข้าง =====
 for(let i=0;i<3;i++){
 const panelLine = new THREE.Mesh(
 new THREE.BoxGeometry(3,110,120),
@@ -148,7 +197,6 @@ panelLine.position.set(-70 + i*70,85,0);
 group.add(panelLine);
 }
 
-// ===== ช่องลมด้านข้าง =====
 for(let i=0;i<6;i++){
 const grill = new THREE.Mesh(
 new THREE.BoxGeometry(180,4,4),
@@ -167,7 +215,7 @@ return group;
 // ===== Layout =====
 
 const CT = createCoolingTower(-300,-200);
-const CH = createBox(0,-100,0x888888,160,160,160);
+const CH = createChiller(0,-100);  // 👈 แก้ตรงนี้แล้ว
 const AHU = createAHU(300,-200);
 
 const CDP = createPump(-300,0);
