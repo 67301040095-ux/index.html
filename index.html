@@ -2,175 +2,173 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>HVAC SCADA MODE</title>
+<title>HVAC FULL INDUSTRIAL SIM</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-body{margin:0;overflow:hidden;font-family:Arial}
+body{margin:0;overflow:hidden;font-family:Arial;background:#111;color:#0f0}
 #panel{
-position:absolute;
-top:15px;
-left:15px;
-width:280px;
-background:#111;
-color:#0f0;
-padding:15px;
-border-radius:8px;
-box-shadow:0 0 15px #000;
+position:absolute;top:10px;left:10px;width:320px;
+background:#000;padding:15px;border-radius:8px;
 }
-h3{margin-top:0;color:#0ff}
-button{
-margin:5px 0;
-width:100%;
-padding:8px;
-}
-.status{font-weight:bold}
-.alarm{
-color:red;
-font-weight:bold;
-}
+button{width:100%;margin:5px 0;padding:8px;}
+.alarm{color:red;font-weight:bold}
+canvas{background:#222;margin-top:10px}
 </style>
 </head>
 <body>
 
 <div id="panel">
-<h3>HVAC SCADA</h3>
+<h3>HVAC INDUSTRIAL SIM</h3>
 
-<div>CDP Status: <span id="cdpStat" class="status">STOP</span></div>
-<div>CHP Status: <span id="chpStat" class="status">STOP</span></div>
-<div>CT Fan: <span id="fanStat" class="status">RUN</span></div>
+Mode: <span id="mode">MANUAL</span><br>
+CDP: <span id="cdpStat">STOP</span><br>
+CHP: <span id="chpStat">STOP</span><br>
+Fan: <span id="fanStat">RUN</span><br>
 <hr>
-<div>Condenser Temp: <span id="condTemp">35</span> °C</div>
-<div>Chilled Temp: <span id="chillTemp">7</span> °C</div>
-<div>Pressure: <span id="pressure">0</span> bar</div>
+Cond Temp: <span id="condTemp">35</span> °C<br>
+Chill Temp: <span id="chillTemp">7</span> °C<br>
+Pressure: <span id="pressure">0</span> bar<br>
 <hr>
 <div id="alarmBox"></div>
 <hr>
+
+<button onclick="toggleMode()">Toggle AUTO/MANUAL</button>
 <button onclick="toggleCDP()">Toggle CDP</button>
 <button onclick="toggleCHP()">Toggle CHP</button>
-<button onclick="toggleFan()">Toggle CT Fan</button>
-</div>
+<button onclick="toggleFan()">Toggle Fan</button>
+<button onclick="simulateFault()">Simulate Fault</button>
+<button onclick="resetAlarm()">Reset Alarm</button>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<canvas id="trend" width="280" height="150"></canvas>
+</div>
 
 <script>
 
-const scene=new THREE.Scene();
-scene.background=new THREE.Color(0xbfdfff);
-
-const camera=new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,5000);
-camera.position.set(1000,700,1000);
-
-const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth,window.innerHeight);
-document.body.appendChild(renderer.domElement);
-
-const controls=new THREE.OrbitControls(camera,renderer.domElement);
-controls.enableDamping=true;
-
-scene.add(new THREE.AmbientLight(0xffffff,0.4));
-const light=new THREE.DirectionalLight(0xffffff,1);
-light.position.set(600,900,600);
-scene.add(light);
-
-// Equipment
-function box(x,z,w,h,d,color){
-const m=new THREE.Mesh(
-new THREE.BoxGeometry(w,h,d),
-new THREE.MeshStandardMaterial({color})
-);
-m.position.set(x,h/2,z);
-scene.add(m);
-return m;
-}
-
-box(-1000,0,300,350,300,0x666666); // CT
-box(0,0,400,250,250,0x999999); // CH
-box(1200,0,350,250,250,0x777777); // AHU
-box(-600,0,150,200,150,0xaa0000); // CDP
-box(500,0,150,200,150,0x0033aa); // CHP
-
-// Fan
-const fan=new THREE.Mesh(
-new THREE.CylinderGeometry(100,100,20,32),
-new THREE.MeshStandardMaterial({color:0x222222})
-);
-fan.position.set(-1000,370,0);
-scene.add(fan);
-
-// Flow arrows
-const arrows=[];
-function flow(x,color){
-const g=new THREE.ConeGeometry(20,60,16);
-const m=new THREE.MeshStandardMaterial({color});
-const mesh=new THREE.Mesh(g,m);
-mesh.rotation.z=Math.PI/2;
-mesh.position.set(x,200,0);
-scene.add(mesh);
-arrows.push(mesh);
-}
-flow(-300,0xff0000);
-flow(300,0x0066ff);
-flow(900,0x0066ff);
-
-// States
+let mode="MANUAL";
 let cdp=false;
 let chp=false;
 let fanOn=true;
 let condTemp=35;
 let chillTemp=7;
 let pressure=0;
+let alarm="";
+let fault=false;
 
-// UI Functions
-function toggleCDP(){cdp=!cdp;}
-function toggleCHP(){chp=!chp;}
-function toggleFan(){fanOn=!fanOn;}
+// SOUND
+const audio=new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg");
 
+function toggleMode(){
+mode=mode==="MANUAL"?"AUTO":"MANUAL";
+}
+function toggleCDP(){ if(mode==="MANUAL") cdp=!cdp; }
+function toggleCHP(){ if(mode==="MANUAL") chp=!chp; }
+function toggleFan(){ if(mode==="MANUAL") fanOn=!fanOn; }
+
+function simulateFault(){
+fault=true;
+condTemp=60;
+}
+
+function resetAlarm(){
+alarm="";
+fault=false;
+audio.pause();
+audio.currentTime=0;
+}
+
+// AUTO LOGIC
+function autoControl(){
+if(mode==="AUTO"){
+cdp=true;
+chp=true;
+fanOn=true;
+}
+}
+
+// PROCESS SIMULATION
+function process(){
+if(cdp){
+condTemp-=0.05;
+pressure=3;
+}else{
+condTemp+=0.08;
+pressure=0;
+}
+
+if(chp){
+chillTemp-=0.02;
+}else{
+chillTemp+=0.05;
+}
+
+// Interlock logic
+if(condTemp>50){
+alarm="⚠ HIGH PRESSURE TRIP";
+cdp=false;
+fanOn=false;
+audio.play();
+}
+
+if(chillTemp<3){
+alarm="⚠ LOW TEMP TRIP";
+chp=false;
+audio.play();
+}
+
+if(fault){
+alarm="⚠ SYSTEM FAULT";
+audio.play();
+}
+}
+
+// UI UPDATE
 function updateUI(){
+document.getElementById("mode").innerText=mode;
 document.getElementById("cdpStat").innerText=cdp?"RUN":"STOP";
 document.getElementById("chpStat").innerText=chp?"RUN":"STOP";
 document.getElementById("fanStat").innerText=fanOn?"RUN":"STOP";
 document.getElementById("condTemp").innerText=condTemp.toFixed(1);
 document.getElementById("chillTemp").innerText=chillTemp.toFixed(1);
 document.getElementById("pressure").innerText=pressure.toFixed(1);
-
-let alarm="";
-if(fanOn && !cdp) alarm="⚠ ALARM: Condenser Pump OFF!";
-if(!chp && chillTemp>10) alarm="⚠ ALARM: No Chilled Flow!";
 document.getElementById("alarmBox").innerHTML=
 alarm?'<div class="alarm">'+alarm+'</div>':"";
 }
 
-// Animation
-function animate(){
-requestAnimationFrame(animate);
-controls.update();
-
-if(fanOn) fan.rotation.y+=0.08;
-
-arrows.forEach(a=>{
-if((a.material.color.getHex()==0xff0000 && cdp) ||
-(a.material.color.getHex()==0x0066ff && chp)){
-a.position.x+=5;
-if(a.position.x>1300) a.position.x=-1100;
-}
+// TREND GRAPH
+const ctx=document.getElementById("trend").getContext("2d");
+const chart=new Chart(ctx,{
+type:"line",
+data:{
+labels:[],
+datasets:[
+{label:"Cond Temp",data:[],borderColor:"red"},
+{label:"Chill Temp",data:[],borderColor:"cyan"}
+]
+},
+options:{responsive:false,animation:false}
 });
 
-if(cdp){condTemp-=0.02; pressure=3;}
-else{condTemp+=0.03; pressure=0;}
+function updateTrend(){
+if(chart.data.labels.length>20){
+chart.data.labels.shift();
+chart.data.datasets[0].data.shift();
+chart.data.datasets[1].data.shift();
+}
+chart.data.labels.push("");
+chart.data.datasets[0].data.push(condTemp);
+chart.data.datasets[1].data.push(chillTemp);
+chart.update();
+}
 
-if(chp){chillTemp-=0.01;}
-else{chillTemp+=0.02;}
-
+// MAIN LOOP
+function loop(){
+autoControl();
+process();
 updateUI();
-renderer.render(scene,camera);
+updateTrend();
+requestAnimationFrame(loop);
 }
-animate();
-
-window.addEventListener('resize',()=>{
-camera.aspect=window.innerWidth/window.innerHeight;
-camera.updateProjectionMatrix();
-renderer.setSize(window.innerWidth,window.innerHeight);
-});
+loop();
 
 </script>
 </body>
