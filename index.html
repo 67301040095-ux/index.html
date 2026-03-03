@@ -2,76 +2,120 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Plant System</title>
+<title>Plant System Full</title>
 <style>
 body { margin:0; overflow:hidden; }
 </style>
 </head>
 <body>
 
-<!-- THREE r128 (เสถียร) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
 <script>
 
-// ================= SCENE =================
+// ===== SCENE =====
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xbfdfff);
 
-// ================= CAMERA =================
+// ===== CAMERA =====
 const camera = new THREE.PerspectiveCamera(
-75,
-window.innerWidth/window.innerHeight,
-0.1,
-5000
+75, window.innerWidth/window.innerHeight, 0.1, 5000
 );
-camera.position.set(700,500,700);
+camera.position.set(800,500,800);
 
-// ================= RENDERER =================
+// ===== RENDERER =====
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// ================= CONTROLS =================
+// ===== CONTROLS =====
 const controls = new THREE.OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
 
-// ================= LIGHT =================
+// ===== LIGHT =====
 const light = new THREE.DirectionalLight(0xffffff,1);
 light.position.set(500,800,500);
 scene.add(light);
+scene.add(new THREE.AmbientLight(0xffffff,0.4));
 
-const ambient = new THREE.AmbientLight(0xffffff,0.4);
-scene.add(ambient);
-
-// ================= GROUND =================
+// ===== GROUND =====
 const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(3000,3000),
+new THREE.PlaneGeometry(4000,4000),
 new THREE.MeshStandardMaterial({color:0xdddddd})
 );
 ground.rotation.x = -Math.PI/2;
 scene.add(ground);
 
-// =====================================================
-// ================== PUMP (แนวตั้ง) ===================
-// =====================================================
-function createPump(x,z){
-const group = new THREE.Group();
+// ==========================================
+// =============== FUNCTIONS ===============
+// ==========================================
+
+function pipeHorizontal(x,y,z,length){
+const pipe = new THREE.Mesh(
+new THREE.CylinderGeometry(15,15,length,16),
+new THREE.MeshStandardMaterial({color:0x888888})
+);
+pipe.rotation.z = Math.PI/2;
+pipe.position.set(x,y,z);
+scene.add(pipe);
+}
+
+function pipeVertical(x,y,z,length){
+const pipe = new THREE.Mesh(
+new THREE.CylinderGeometry(15,15,length,16),
+new THREE.MeshStandardMaterial({color:0x888888})
+);
+pipe.position.set(x,y,z);
+scene.add(pipe);
+}
+
+function valve(x,y,z){
+const body = new THREE.Mesh(
+new THREE.SphereGeometry(25,16,16),
+new THREE.MeshStandardMaterial({color:0xcc0000})
+);
+body.position.set(x,y,z);
+scene.add(body);
+}
+
+function structure(x,z){
+const frame = new THREE.Mesh(
+new THREE.BoxGeometry(500,20,80),
+new THREE.MeshStandardMaterial({color:0x444444})
+);
+frame.position.set(x,60,z);
+scene.add(frame);
+}
+
+// ==========================================
+// =============== EQUIPMENT ===============
+// ==========================================
+
+// ---- Tank ----
+const tank = new THREE.Mesh(
+new THREE.CylinderGeometry(120,120,250,32),
+new THREE.MeshStandardMaterial({color:0xaaaaaa})
+);
+tank.position.set(-600,125,0);
+scene.add(tank);
+
+// ---- Pump (Vertical) ----
+const pumpGroup = new THREE.Group();
 
 const base = new THREE.Mesh(
 new THREE.CylinderGeometry(60,60,40,32),
 new THREE.MeshStandardMaterial({color:0x333333})
 );
 base.position.y = 20;
-group.add(base);
+pumpGroup.add(base);
 
 const body = new THREE.Mesh(
 new THREE.CylinderGeometry(35,35,140,32),
 new THREE.MeshStandardMaterial({color:0x0066cc})
 );
 body.position.y = 110;
-group.add(body);
+pumpGroup.add(body);
 
 const motor = new THREE.Mesh(
 new THREE.CylinderGeometry(30,30,80,32),
@@ -79,131 +123,95 @@ new THREE.MeshStandardMaterial({color:0x555555})
 );
 motor.rotation.z = Math.PI/2;
 motor.position.set(90,110,0);
-group.add(motor);
+pumpGroup.add(motor);
 
-group.position.set(x,0,z);
-scene.add(group);
-}
+pumpGroup.position.set(-300,0,0);
+scene.add(pumpGroup);
 
-// =====================================================
-// ====================== TANK ==========================
-// =====================================================
-function createTank(x,z){
-const tank = new THREE.Mesh(
-new THREE.CylinderGeometry(120,120,250,32),
-new THREE.MeshStandardMaterial({color:0xaaaaaa})
-);
-tank.position.set(x,125,z);
-scene.add(tank);
-}
+// ---- Cooling Tower ----
+const towerGroup = new THREE.Group();
 
-// =====================================================
-// ======================= PIPE =========================
-// =====================================================
-function createPipe(x,z,length){
-const pipe = new THREE.Mesh(
-new THREE.CylinderGeometry(15,15,length,16),
-new THREE.MeshStandardMaterial({color:0x888888})
-);
-pipe.rotation.z = Math.PI/2;
-pipe.position.set(x,120,z);
-scene.add(pipe);
-}
-
-// =====================================================
-// ================= COOLING TOWER ======================
-// =====================================================
-function createCoolingTower(x,z){
-
-const group = new THREE.Group();
-
-// base
-const base = new THREE.Mesh(
-new THREE.BoxGeometry(220,40,220),
+const baseCT = new THREE.Mesh(
+new THREE.BoxGeometry(250,40,250),
 new THREE.MeshStandardMaterial({color:0x444444})
 );
-base.position.y = 20;
-group.add(base);
+baseCT.position.y = 20;
+towerGroup.add(baseCT);
 
-// body
-const body = new THREE.Mesh(
-new THREE.BoxGeometry(170,220,170),
+const bodyCT = new THREE.Mesh(
+new THREE.BoxGeometry(180,250,180),
 new THREE.MeshStandardMaterial({color:0x666666})
 );
-body.position.y = 150;
-group.add(body);
+bodyCT.position.y = 170;
+towerGroup.add(bodyCT);
 
-// roof vent
-for(let i=0;i<4;i++){
-const vent = new THREE.Mesh(
-new THREE.BoxGeometry(150,25,12),
-new THREE.MeshStandardMaterial({color:0x999999})
-);
-vent.position.y = 250;
-
-if(i===0) vent.position.z=85;
-if(i===1) vent.position.z=-85;
-if(i===2){ vent.rotation.y=Math.PI/2; vent.position.x=85; }
-if(i===3){ vent.rotation.y=Math.PI/2; vent.position.x=-85; }
-
-group.add(vent);
-}
-
-// roof
 const roof = new THREE.Mesh(
-new THREE.BoxGeometry(190,25,190),
+new THREE.BoxGeometry(200,25,200),
 new THREE.MeshStandardMaterial({color:0x333333})
 );
-roof.position.y = 275;
-group.add(roof);
+roof.position.y = 310;
+towerGroup.add(roof);
 
-// fan
 const fanGroup = new THREE.Group();
 
 const fanBase = new THREE.Mesh(
-new THREE.CylinderGeometry(65,65,15,32),
+new THREE.CylinderGeometry(70,70,15,32),
 new THREE.MeshStandardMaterial({color:0x222222})
 );
-fanBase.position.y = 285;
+fanBase.position.y = 320;
 fanGroup.add(fanBase);
 
 for(let i=0;i<4;i++){
 const blade = new THREE.Mesh(
-new THREE.BoxGeometry(120,8,18),
-new THREE.MeshStandardMaterial({color:0xcccccc})
+new THREE.BoxGeometry(130,10,20),
+new THREE.MeshStandardMaterial({color:0xffffff})
 );
-blade.position.y = 292;
+blade.position.y = 327;
 blade.rotation.y = (Math.PI/2)*i;
 fanGroup.add(blade);
 }
 
-group.add(fanGroup);
-group.position.set(x,0,z);
-scene.add(group);
+towerGroup.add(fanGroup);
+towerGroup.position.set(300,0,0);
+scene.add(towerGroup);
 
-return fanGroup;
-}
+// ---- Control Panel ----
+const panel = new THREE.Mesh(
+new THREE.BoxGeometry(120,180,80),
+new THREE.MeshStandardMaterial({color:0x999999})
+);
+panel.position.set(-100,90,-200);
+scene.add(panel);
 
-// =====================================================
-// ================= CREATE EQUIPMENT ===================
-// =====================================================
-createTank(-400,0);
-createPump(-150,0);
-createPipe(-280,0,250);
-const fan = createCoolingTower(300,0);
+// ==========================================
+// =============== PIPING ==================
+// ==========================================
 
-// =====================================================
-// ================= ANIMATION ==========================
-// =====================================================
+// Tank → Pump
+pipeHorizontal(-450,120,0,200);
+valve(-450,120,0);
+
+// Pump → CT
+pipeHorizontal(0,120,0,600);
+valve(0,120,0);
+
+// Up to Cooling Tower
+pipeVertical(300,250,0,250);
+
+// Structure under pipe
+structure(0,0);
+
+// ==========================================
+// =============== ANIMATE =================
+// ==========================================
 function animate(){
 requestAnimationFrame(animate);
 controls.update();
-fan.rotation.y += 0.1;
+fanGroup.rotation.y += 0.08;
 renderer.render(scene,camera);
 }
 animate();
 
-// resize
 window.addEventListener('resize',()=>{
 camera.aspect = window.innerWidth/window.innerHeight;
 camera.updateProjectionMatrix();
