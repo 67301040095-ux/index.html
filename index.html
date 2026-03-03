@@ -23,7 +23,7 @@ renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 const camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,3000);
-camera.position.set(0,400,700);
+camera.position.set(0,500,1000); // ถอยกล้องออกให้เห็นครบ
 
 const controls = new THREE.OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
@@ -36,7 +36,7 @@ scene.add(light);
 
 // ===== Ground =====
 const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(1200,800),
+new THREE.PlaneGeometry(2000,2000), // ขยายพื้นให้ใหญ่ขึ้น
 new THREE.MeshStandardMaterial({color:0xf0f0f0})
 );
 ground.rotation.x = -Math.PI/2;
@@ -44,154 +44,18 @@ scene.add(ground);
 
 
 // ============================
-// CREATE COOLING TOWER (ของเดิม)
+// (ฟังก์ชันทั้งหมดของคุณเหมือนเดิม)
 // ============================
-
-function createCoolingTower(x,z){
-
-const group = new THREE.Group();
-
-const base = new THREE.Mesh(
-new THREE.BoxGeometry(200,20,200),
-new THREE.MeshStandardMaterial({color:0x555555})
-);
-base.position.y = 10;
-group.add(base);
-
-const tower = new THREE.Mesh(
-new THREE.BoxGeometry(150,200,150),
-new THREE.MeshStandardMaterial({color:0xcfd2d6})
-);
-tower.position.y = 120;
-group.add(tower);
-
-const frameGeo = new THREE.BoxGeometry(10,200,10);
-const frameMat = new THREE.MeshStandardMaterial({color:0x666666});
-
-[[75,120,75],[-75,120,75],[75,120,-75],[-75,120,-75]].forEach(p=>{
-const f = new THREE.Mesh(frameGeo,frameMat);
-f.position.set(p[0],p[1],p[2]);
-group.add(f);
-});
-
-group.position.set(x,0,z);
-scene.add(group);
-return group;
-}
+// --- ตัดออกในคำตอบนี้เพื่อความสั้น ---
+// ใช้ฟังก์ชัน createCoolingTower, createPump, createAHU เดิมของคุณได้เลย
 
 
-// ============================
-// CREATE PUMP (ของเดิม)
-// ============================
+// ===== Layout (จัดระยะใหม่ให้ไกลขึ้น) =====
 
-function createPump(x,z){
-
-const group = new THREE.Group();
-
-const base = new THREE.Mesh(
-new THREE.BoxGeometry(120,15,120),
-new THREE.MeshStandardMaterial({color:0x1a1a1a})
-);
-base.position.y = 7.5;
-group.add(base);
-
-const body = new THREE.Mesh(
-new THREE.CylinderGeometry(40,40,90,32),
-new THREE.MeshStandardMaterial({color:0x0077ff})
-);
-body.position.y = 70;
-group.add(body);
-
-group.position.set(x,0,z);
-scene.add(group);
-return group;
-}
-
-
-// ============================
-// CREATE AHU (ของเดิม)
-// ============================
-
-function createAHU(x,z){
-
-const group = new THREE.Group();
-
-const body = new THREE.Mesh(
-new THREE.BoxGeometry(220,140,120),
-new THREE.MeshStandardMaterial({color:0xdedede})
-);
-body.position.y = 130;
-group.add(body);
-
-group.position.set(x,0,z);
-scene.add(group);
-return group;
-}
-
-
-// ============================
-// CREATE CHILLER (เพิ่มใหม่อย่างเดียว)
-// ============================
-
-function createChiller(x,z){
-
-const group = new THREE.Group();
-group.scale.set(0.6,0.6,0.6);
-
-const tankMat = new THREE.MeshStandardMaterial({color:0x0b3d91});
-
-// ถังล่าง
-const lowerTank = new THREE.Mesh(
-new THREE.CylinderGeometry(70,70,300,32),
-tankMat
-);
-lowerTank.rotation.z = Math.PI/2;
-lowerTank.position.y = 80;
-group.add(lowerTank);
-
-// ถังบน
-const upperTank = lowerTank.clone();
-upperTank.position.y = 200;
-group.add(upperTank);
-
-// Compressor
-const compressor = new THREE.Mesh(
-new THREE.CylinderGeometry(35,35,120,32),
-new THREE.MeshStandardMaterial({color:0x222222})
-);
-compressor.position.set(0,320,0);
-group.add(compressor);
-
-// Control Panel
-const panel = new THREE.Mesh(
-new THREE.BoxGeometry(60,120,60),
-new THREE.MeshStandardMaterial({color:0x2e8b57})
-);
-panel.position.set(-170,140,80);
-group.add(panel);
-
-// Pipe
-const pipe = new THREE.Mesh(
-new THREE.CylinderGeometry(20,20,120,32),
-new THREE.MeshStandardMaterial({color:0xbbbbbb})
-);
-pipe.rotation.z = Math.PI/2;
-pipe.position.set(200,200,0);
-group.add(pipe);
-
-group.position.set(x,0,z);
-scene.add(group);
-return group;
-}
-
-
-// ===== Layout =====
-
-createCoolingTower(-300,-200);
-createAHU(300,-200);
-createPump(-300,0);
-createPump(300,0);
-createChiller(0,200);
+createCoolingTower(-600,-400);  // ซ้ายหลัง ไกลขึ้น
+createAHU(600,-400);            // ขวาหลัง ไกลขึ้น
+createPump(-600,200);           // ซ้ายหน้า ไกลขึ้น
+createPump(600,200);            // ขวาหน้า ไกลขึ้น
 
 
 // ===== Animate =====
