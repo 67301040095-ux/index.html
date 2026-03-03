@@ -22,8 +22,8 @@ const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,3000);
-camera.position.set(0,500,1000); // ถอยกล้องออกให้เห็นครบ
+const camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,5000);
+camera.position.set(0,600,1200);
 
 const controls = new THREE.OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
@@ -31,12 +31,12 @@ controls.enableDamping = true;
 // ===== Light =====
 scene.add(new THREE.AmbientLight(0xffffff,0.6));
 const light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(300,500,200);
+light.position.set(500,800,400);
 scene.add(light);
 
 // ===== Ground =====
 const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(2000,2000), // ขยายพื้นให้ใหญ่ขึ้น
+new THREE.PlaneGeometry(3000,3000),
 new THREE.MeshStandardMaterial({color:0xf0f0f0})
 );
 ground.rotation.x = -Math.PI/2;
@@ -44,18 +44,174 @@ scene.add(ground);
 
 
 // ============================
-// (ฟังก์ชันทั้งหมดของคุณเหมือนเดิม)
+// COOLING TOWER
 // ============================
-// --- ตัดออกในคำตอบนี้เพื่อความสั้น ---
-// ใช้ฟังก์ชัน createCoolingTower, createPump, createAHU เดิมของคุณได้เลย
+
+function createCoolingTower(x,z){
+
+const group = new THREE.Group();
+
+const base = new THREE.Mesh(
+new THREE.BoxGeometry(200,20,200),
+new THREE.MeshStandardMaterial({color:0x555555})
+);
+base.position.y = 10;
+group.add(base);
+
+const tower = new THREE.Mesh(
+new THREE.BoxGeometry(150,200,150),
+new THREE.MeshStandardMaterial({color:0xcfd2d6})
+);
+tower.position.y = 120;
+group.add(tower);
+
+const frameGeo = new THREE.BoxGeometry(10,200,10);
+const frameMat = new THREE.MeshStandardMaterial({color:0x666666});
+
+[[75,120,75],[-75,120,75],[75,120,-75],[-75,120,-75]].forEach(p=>{
+const f = new THREE.Mesh(frameGeo,frameMat);
+f.position.set(p[0],p[1],p[2]);
+group.add(f);
+});
+
+const louverMat = new THREE.MeshStandardMaterial({color:0x9aa0a6});
+
+for(let i=0;i<8;i++){
+let y = 50 + i*20;
+
+let front = new THREE.Mesh(new THREE.BoxGeometry(160,8,6),louverMat);
+front.position.set(0,y,78);
+group.add(front);
+
+let back = front.clone();
+back.position.z = -78;
+group.add(back);
+
+let left = new THREE.Mesh(new THREE.BoxGeometry(6,8,160),louverMat);
+left.position.set(-78,y,0);
+group.add(left);
+
+let right = left.clone();
+right.position.x = 78;
+group.add(right);
+}
+
+const deck = new THREE.Mesh(
+new THREE.BoxGeometry(170,15,170),
+new THREE.MeshStandardMaterial({color:0x888888})
+);
+deck.position.y = 225;
+group.add(deck);
+
+const ring = new THREE.Mesh(
+new THREE.RingGeometry(40,55,32),
+new THREE.MeshStandardMaterial({color:0x222222,side:THREE.DoubleSide})
+);
+ring.rotation.x = -Math.PI/2;
+ring.position.y = 235;
+group.add(ring);
+
+group.position.set(x,0,z);
+scene.add(group);
+}
 
 
-// ===== Layout (จัดระยะใหม่ให้ไกลขึ้น) =====
+// ============================
+// VERTICAL PUMP
+// ============================
 
-createCoolingTower(-600,-400);  // ซ้ายหลัง ไกลขึ้น
-createAHU(600,-400);            // ขวาหลัง ไกลขึ้น
-createPump(-600,200);           // ซ้ายหน้า ไกลขึ้น
-createPump(600,200);            // ขวาหน้า ไกลขึ้น
+function createPump(x,z){
+
+const group = new THREE.Group();
+
+const base = new THREE.Mesh(
+new THREE.BoxGeometry(120,15,120),
+new THREE.MeshStandardMaterial({color:0x1a1a1a})
+);
+base.position.y = 7.5;
+group.add(base);
+
+const flangeBottom = new THREE.Mesh(
+new THREE.CylinderGeometry(50,50,12,32),
+new THREE.MeshStandardMaterial({color:0x444444})
+);
+flangeBottom.position.y = 21;
+group.add(flangeBottom);
+
+const body = new THREE.Mesh(
+new THREE.CylinderGeometry(40,40,90,32),
+new THREE.MeshStandardMaterial({color:0x0077ff})
+);
+body.position.y = 70;
+group.add(body);
+
+const coupling = new THREE.Mesh(
+new THREE.CylinderGeometry(25,25,20,32),
+new THREE.MeshStandardMaterial({color:0x333333})
+);
+coupling.position.y = 120;
+group.add(coupling);
+
+const motor = new THREE.Mesh(
+new THREE.CylinderGeometry(35,35,60,32),
+new THREE.MeshStandardMaterial({color:0x666666})
+);
+motor.position.y = 160;
+group.add(motor);
+
+const pipeLeft = new THREE.Mesh(
+new THREE.CylinderGeometry(18,18,45,32),
+new THREE.MeshStandardMaterial({color:0xbbbbbb})
+);
+pipeLeft.rotation.z = Math.PI/2;
+pipeLeft.position.set(-55,70,0);
+group.add(pipeLeft);
+
+const pipeRight = pipeLeft.clone();
+pipeRight.position.x = 55;
+group.add(pipeRight);
+
+group.position.set(x,0,z);
+scene.add(group);
+}
+
+
+// ============================
+// AHU
+// ============================
+
+function createAHU(x,z){
+
+const group = new THREE.Group();
+
+const body = new THREE.Mesh(
+new THREE.BoxGeometry(240,150,140),
+new THREE.MeshStandardMaterial({color:0xdedede})
+);
+body.position.y = 120;
+group.add(body);
+
+const fanHousing = new THREE.Mesh(
+new THREE.CylinderGeometry(45,45,60,32),
+new THREE.MeshStandardMaterial({color:0x333333})
+);
+fanHousing.rotation.z = Math.PI/2;
+fanHousing.position.set(80,120,0);
+group.add(fanHousing);
+
+group.position.set(x,0,z);
+scene.add(group);
+}
+
+
+// ============================
+// LAYOUT (ห่างจริง)
+// ============================
+
+createCoolingTower(-900,-700);
+createAHU(900,-700);
+createPump(-900,400);
+createPump(900,400);
 
 
 // ===== Animate =====
