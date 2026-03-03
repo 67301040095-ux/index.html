@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Plant System Full</title>
+<title>HVAC System - Full Layout</title>
 <style>
 body { margin:0; overflow:hidden; }
 </style>
@@ -14,196 +14,131 @@ body { margin:0; overflow:hidden; }
 
 <script>
 
-// ===== SCENE =====
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xbfdfff);
 
-// ===== CAMERA =====
-const camera = new THREE.PerspectiveCamera(
-75, window.innerWidth/window.innerHeight, 0.1, 5000
-);
-camera.position.set(800,500,800);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 5000);
+camera.position.set(900,600,900);
 
-// ===== RENDERER =====
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// ===== CONTROLS =====
 const controls = new THREE.OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
 
-// ===== LIGHT =====
+scene.add(new THREE.AmbientLight(0xffffff,0.4));
+
 const light = new THREE.DirectionalLight(0xffffff,1);
 light.position.set(500,800,500);
 scene.add(light);
-scene.add(new THREE.AmbientLight(0xffffff,0.4));
 
-// ===== GROUND =====
+// Ground
 const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(4000,4000),
+new THREE.PlaneGeometry(5000,5000),
 new THREE.MeshStandardMaterial({color:0xdddddd})
 );
 ground.rotation.x = -Math.PI/2;
 scene.add(ground);
 
-// ==========================================
-// =============== FUNCTIONS ===============
-// ==========================================
+// ---------- FUNCTIONS ----------
 
-function pipeHorizontal(x,y,z,length){
-const pipe = new THREE.Mesh(
-new THREE.CylinderGeometry(15,15,length,16),
-new THREE.MeshStandardMaterial({color:0x888888})
+function pipe(x,y,z,length,color,rotateZ=true){
+const mesh = new THREE.Mesh(
+new THREE.CylinderGeometry(18,18,length,16),
+new THREE.MeshStandardMaterial({color:color})
 );
-pipe.rotation.z = Math.PI/2;
-pipe.position.set(x,y,z);
-scene.add(pipe);
+if(rotateZ) mesh.rotation.z = Math.PI/2;
+mesh.position.set(x,y,z);
+scene.add(mesh);
 }
 
-function pipeVertical(x,y,z,length){
-const pipe = new THREE.Mesh(
-new THREE.CylinderGeometry(15,15,length,16),
-new THREE.MeshStandardMaterial({color:0x888888})
-);
-pipe.position.set(x,y,z);
-scene.add(pipe);
-}
-
-function valve(x,y,z){
-const body = new THREE.Mesh(
-new THREE.SphereGeometry(25,16,16),
-new THREE.MeshStandardMaterial({color:0xcc0000})
-);
-body.position.set(x,y,z);
-scene.add(body);
-}
-
-function structure(x,z){
-const frame = new THREE.Mesh(
-new THREE.BoxGeometry(500,20,80),
-new THREE.MeshStandardMaterial({color:0x444444})
-);
-frame.position.set(x,60,z);
-scene.add(frame);
-}
-
-// ==========================================
-// =============== EQUIPMENT ===============
-// ==========================================
-
-// ---- Tank ----
-const tank = new THREE.Mesh(
-new THREE.CylinderGeometry(120,120,250,32),
-new THREE.MeshStandardMaterial({color:0xaaaaaa})
-);
-tank.position.set(-600,125,0);
-scene.add(tank);
-
-// ---- Pump (Vertical) ----
-const pumpGroup = new THREE.Group();
+function pump(x,z,color){
+const group = new THREE.Group();
 
 const base = new THREE.Mesh(
 new THREE.CylinderGeometry(60,60,40,32),
 new THREE.MeshStandardMaterial({color:0x333333})
 );
 base.position.y = 20;
-pumpGroup.add(base);
+group.add(base);
 
 const body = new THREE.Mesh(
 new THREE.CylinderGeometry(35,35,140,32),
-new THREE.MeshStandardMaterial({color:0x0066cc})
+new THREE.MeshStandardMaterial({color:color})
 );
 body.position.y = 110;
-pumpGroup.add(body);
+group.add(body);
 
-const motor = new THREE.Mesh(
-new THREE.CylinderGeometry(30,30,80,32),
-new THREE.MeshStandardMaterial({color:0x555555})
+group.position.set(x,0,z);
+scene.add(group);
+}
+
+function boxEquip(x,z,w,h,d,color){
+const mesh = new THREE.Mesh(
+new THREE.BoxGeometry(w,h,d),
+new THREE.MeshStandardMaterial({color:color})
 );
-motor.rotation.z = Math.PI/2;
-motor.position.set(90,110,0);
-pumpGroup.add(motor);
+mesh.position.set(x,h/2,z);
+scene.add(mesh);
+return mesh;
+}
 
-pumpGroup.position.set(-300,0,0);
-scene.add(pumpGroup);
+// ---------- EQUIPMENT ----------
 
-// ---- Cooling Tower ----
-const towerGroup = new THREE.Group();
+// CT
+const ct = boxEquip(-700,0,250,300,250,0x666666);
 
-const baseCT = new THREE.Mesh(
-new THREE.BoxGeometry(250,40,250),
-new THREE.MeshStandardMaterial({color:0x444444})
-);
-baseCT.position.y = 20;
-towerGroup.add(baseCT);
-
-const bodyCT = new THREE.Mesh(
-new THREE.BoxGeometry(180,250,180),
-new THREE.MeshStandardMaterial({color:0x666666})
-);
-bodyCT.position.y = 170;
-towerGroup.add(bodyCT);
-
-const roof = new THREE.Mesh(
-new THREE.BoxGeometry(200,25,200),
-new THREE.MeshStandardMaterial({color:0x333333})
-);
-roof.position.y = 310;
-towerGroup.add(roof);
-
+// CT Fan
 const fanGroup = new THREE.Group();
-
 const fanBase = new THREE.Mesh(
-new THREE.CylinderGeometry(70,70,15,32),
+new THREE.CylinderGeometry(80,80,15,32),
 new THREE.MeshStandardMaterial({color:0x222222})
 );
-fanBase.position.y = 320;
+fanBase.position.y = 310;
 fanGroup.add(fanBase);
 
 for(let i=0;i<4;i++){
 const blade = new THREE.Mesh(
-new THREE.BoxGeometry(130,10,20),
+new THREE.BoxGeometry(150,10,25),
 new THREE.MeshStandardMaterial({color:0xffffff})
 );
-blade.position.y = 327;
-blade.rotation.y = (Math.PI/2)*i;
+blade.position.y = 320;
+blade.rotation.y = i*(Math.PI/2);
 fanGroup.add(blade);
 }
+fanGroup.position.set(-700,0,0);
+scene.add(fanGroup);
 
-towerGroup.add(fanGroup);
-towerGroup.position.set(300,0,0);
-scene.add(towerGroup);
+// CHILLER
+boxEquip(0,0,350,200,200,0x999999);
 
-// ---- Control Panel ----
-const panel = new THREE.Mesh(
-new THREE.BoxGeometry(120,180,80),
-new THREE.MeshStandardMaterial({color:0x999999})
-);
-panel.position.set(-100,90,-200);
-scene.add(panel);
+// AHU
+boxEquip(800,0,300,200,200,0x777777);
 
-// ==========================================
-// =============== PIPING ==================
-// ==========================================
+// CDP (Red - Condenser Pump)
+pump(-400,-150,0xff0000);
+pump(-400,150,0xaa0000);
 
-// Tank → Pump
-pipeHorizontal(-450,120,0,200);
-valve(-450,120,0);
+// CHP (Blue - Chilled Pump)
+pump(300,-150,0x0066ff);
+pump(300,150,0x0033aa);
 
-// Pump → CT
-pipeHorizontal(0,120,0,600);
-valve(0,120,0);
+// ---------- PIPING ----------
 
-// Up to Cooling Tower
-pipeVertical(300,250,0,250);
+// 🔴 Condenser Loop (Red)
+pipe(-550,150,0,300,0xff0000); // CT → CDP
+pipe(-200,150,0,400,0xff0000); // CDP → CH
+pipe(-550,120,0,300,0xaa0000); // Return
+pipe(-200,120,0,400,0xaa0000);
 
-// Structure under pipe
-structure(0,0);
+// 🔵 Chilled Loop (Blue)
+pipe(150,150,0,400,0x0066ff); // CH → CHP
+pipe(550,150,0,400,0x0066ff); // CHP → AHU
+pipe(150,120,0,400,0x0033aa); // Return
+pipe(550,120,0,400,0x0033aa);
 
-// ==========================================
-// =============== ANIMATE =================
-// ==========================================
+// ---------- ANIMATE ----------
 function animate(){
 requestAnimationFrame(animate);
 controls.update();
