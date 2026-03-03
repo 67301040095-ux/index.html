@@ -150,6 +150,43 @@ fanGroup.add(blade);
 fanGroup.position.y = 235;
 group.add(fanGroup);
 
+// ===== ท่อเข้า (ล่าง) =====
+const inletPipe = new THREE.Mesh(
+    new THREE.CylinderGeometry(15,15,120,32),
+    new THREE.MeshStandardMaterial({color:0x3a6ea5})
+);
+inletPipe.rotation.z = Math.PI/2;
+inletPipe.position.set(-135,60,0);
+group.add(inletPipe);
+
+// หน้าแปลนท่อเข้า
+const inletFlange = new THREE.Mesh(
+    new THREE.CylinderGeometry(22,22,8,32),
+    new THREE.MeshStandardMaterial({color:0x444444})
+);
+inletFlange.rotation.z = Math.PI/2;
+inletFlange.position.set(-75,60,0);
+group.add(inletFlange);
+
+
+// ===== ท่อออก (บน) =====
+const outletPipe = new THREE.Mesh(
+    new THREE.CylinderGeometry(18,18,140,32),
+    new THREE.MeshStandardMaterial({color:0x2e8b57})
+);
+outletPipe.rotation.z = Math.PI/2;
+outletPipe.position.set(140,170,0);
+group.add(outletPipe);
+
+// หน้าแปลนท่อออก
+const outletFlange = new THREE.Mesh(
+    new THREE.CylinderGeometry(25,25,10,32),
+    new THREE.MeshStandardMaterial({color:0x444444})
+);
+outletFlange.rotation.z = Math.PI/2;
+outletFlange.position.set(80,170,0);
+group.add(outletFlange);
+  
 group.position.set(x,0,z);
 scene.add(group);
 
