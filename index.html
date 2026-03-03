@@ -44,7 +44,121 @@ scene.add(ground);
 
 
 // ============================
-// CREATE BOX (CT / CH / AHU)
+// CREATE COOLING TOWER (NEW)
+// ============================
+
+function createCoolingTower(x,z){
+
+const group = new THREE.Group();
+
+// ===== ฐานคอนกรีต =====
+const base = new THREE.Mesh(
+new THREE.BoxGeometry(200,20,200),
+new THREE.MeshStandardMaterial({color:0x555555})
+);
+base.position.y = 10;
+group.add(base);
+
+// ===== ตัว Tower =====
+const tower = new THREE.Mesh(
+new THREE.BoxGeometry(150,200,150),
+new THREE.MeshStandardMaterial({color:0xcfd2d6})
+);
+tower.position.y = 120;
+group.add(tower);
+
+// ===== เสามุม =====
+const frameGeo = new THREE.BoxGeometry(10,200,10);
+const frameMat = new THREE.MeshStandardMaterial({color:0x666666});
+
+const corners = [
+[75,120,75],
+[-75,120,75],
+[75,120,-75],
+[-75,120,-75]
+];
+
+corners.forEach(p=>{
+const f = new THREE.Mesh(frameGeo,frameMat);
+f.position.set(p[0],p[1],p[2]);
+group.add(f);
+});
+
+// ===== Louver รอบด้าน =====
+const louverMat = new THREE.MeshStandardMaterial({color:0x9aa0a6});
+
+for(let i=0;i<8;i++){
+
+const yPos = 50 + i*20;
+
+// หน้า
+const front = new THREE.Mesh(
+new THREE.BoxGeometry(160,8,6),
+louverMat
+);
+front.position.set(0,yPos,78);
+group.add(front);
+
+// หลัง
+const back = front.clone();
+back.position.z = -78;
+group.add(back);
+
+// ซ้าย
+const left = new THREE.Mesh(
+new THREE.BoxGeometry(6,8,160),
+louverMat
+);
+left.position.set(-78,yPos,0);
+group.add(left);
+
+// ขวา
+const right = left.clone();
+right.position.x = 78;
+group.add(right);
+}
+
+// ===== Fan Deck =====
+const deck = new THREE.Mesh(
+new THREE.BoxGeometry(170,15,170),
+new THREE.MeshStandardMaterial({color:0x888888})
+);
+deck.position.y = 225;
+group.add(deck);
+
+// ===== พัดลม =====
+const fanGroup = new THREE.Group();
+
+// วงแหวน
+const ring = new THREE.Mesh(
+new THREE.RingGeometry(40,55,32),
+new THREE.MeshStandardMaterial({color:0x222222,side:THREE.DoubleSide})
+);
+ring.rotation.x = -Math.PI/2;
+fanGroup.add(ring);
+
+// ใบพัด
+const bladeGeo = new THREE.BoxGeometry(12,3,80);
+const bladeMat = new THREE.MeshStandardMaterial({color:0x222222});
+
+for(let i=0;i<4;i++){
+const blade = new THREE.Mesh(bladeGeo,bladeMat);
+blade.rotation.y = Math.PI/2 * i;
+fanGroup.add(blade);
+}
+
+fanGroup.position.y = 235;
+group.add(fanGroup);
+
+group.position.set(x,0,z);
+scene.add(group);
+
+return group;
+}
+
+
+// ============================
+// CREATE BOX (CH / AHU)
 // ============================
 
 function createBox(x,z,color,height=120,width=120,depth=120){
@@ -66,7 +180,6 @@ function createPump(x,z){
 
 const group = new THREE.Group();
 
-// ฐาน
 const base = new THREE.Mesh(
 new THREE.BoxGeometry(120,15,120),
 new THREE.MeshStandardMaterial({color:0x1a1a1a})
@@ -74,7 +187,6 @@ new THREE.MeshStandardMaterial({color:0x1a1a1a})
 base.position.y = 7.5;
 group.add(base);
 
-// หน้าแปลนล่าง
 const flangeBottom = new THREE.Mesh(
 new THREE.CylinderGeometry(50,50,12,32),
 new THREE.MeshStandardMaterial({color:0x444444})
@@ -82,7 +194,6 @@ new THREE.MeshStandardMaterial({color:0x444444})
 flangeBottom.position.y = 21;
 group.add(flangeBottom);
 
-// ตัวปั๊ม
 const body = new THREE.Mesh(
 new THREE.CylinderGeometry(40,40,90,32),
 new THREE.MeshStandardMaterial({color:0x0077ff})
@@ -90,7 +201,6 @@ new THREE.MeshStandardMaterial({color:0x0077ff})
 body.position.y = 70;
 group.add(body);
 
-// คัปปลิ้ง
 const coupling = new THREE.Mesh(
 new THREE.CylinderGeometry(25,25,20,32),
 new THREE.MeshStandardMaterial({color:0x333333})
@@ -98,7 +208,6 @@ new THREE.MeshStandardMaterial({color:0x333333})
 coupling.position.y = 120;
 group.add(coupling);
 
-// มอเตอร์ (ไม่ยาวเกิน)
 const motor = new THREE.Mesh(
 new THREE.CylinderGeometry(35,35,60,32),
 new THREE.MeshStandardMaterial({color:0x666666})
@@ -106,7 +215,6 @@ new THREE.MeshStandardMaterial({color:0x666666})
 motor.position.y = 160;
 group.add(motor);
 
-// ท่อซ้าย
 const pipeLeft = new THREE.Mesh(
 new THREE.CylinderGeometry(18,18,45,32),
 new THREE.MeshStandardMaterial({color:0xbbbbbb})
@@ -115,13 +223,8 @@ pipeLeft.rotation.z = Math.PI/2;
 pipeLeft.position.set(-55,70,0);
 group.add(pipeLeft);
 
-// ท่อขวา
-const pipeRight = new THREE.Mesh(
-new THREE.CylinderGeometry(18,18,45,32),
-new THREE.MeshStandardMaterial({color:0xbbbbbb})
-);
-pipeRight.rotation.z = Math.PI/2;
-pipeRight.position.set(55,70,0);
+const pipeRight = pipeLeft.clone();
+pipeRight.position.x = 55;
 group.add(pipeRight);
 
 group.position.set(x,0,z);
@@ -133,7 +236,7 @@ return group;
 
 // ===== Layout =====
 
-const CT = createBox(-300,-200,0x444444,140,140,140);
+const CT = createCoolingTower(-300,-200);  // <<< ใช้ CT ใหม่
 const CH = createBox(0,-100,0x888888,160,160,160);
 const AHU = createBox(300,-200,0xddddcc,120,200,120);
 
