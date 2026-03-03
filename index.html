@@ -44,7 +44,62 @@ scene.add(ground);
 
 
 // ============================
-// CREATE BOX (CT / CH / AHU)
+// CREATE COOLING TOWER
+// ============================
+
+function createCoolingTower(x,z){
+
+const group = new THREE.Group();
+
+// ตัวถัง
+const body = new THREE.Mesh(
+new THREE.BoxGeometry(180,200,180),
+new THREE.MeshStandardMaterial({color:0x555555})
+);
+body.position.y = 100;
+group.add(body);
+
+// ขอบบน
+const topFrame = new THREE.Mesh(
+new THREE.BoxGeometry(190,20,190),
+new THREE.MeshStandardMaterial({color:0x333333})
+);
+topFrame.position.y = 210;
+group.add(topFrame);
+
+// วงพัดลม
+const fanRing = new THREE.Mesh(
+new THREE.CylinderGeometry(70,70,15,32),
+new THREE.MeshStandardMaterial({color:0x222222})
+);
+fanRing.position.y = 220;
+group.add(fanRing);
+
+// ใบพัด
+const fanGroup = new THREE.Group();
+for(let i=0;i<4;i++){
+const blade = new THREE.Mesh(
+new THREE.BoxGeometry(120,8,20),
+new THREE.MeshStandardMaterial({color:0xaaaaaa})
+);
+blade.rotation.y = (Math.PI/2)*i;
+fanGroup.add(blade);
+}
+fanGroup.position.y = 230;
+group.add(fanGroup);
+
+// เก็บ fanGroup ไว้ใช้หมุน
+group.userData.fan = fanGroup;
+
+group.position.set(x,0,z);
+scene.add(group);
+
+return group;
+}
+
+
+// ============================
+// CREATE BOX (CH / AHU)
 // ============================
 
 function createBox(x,z,color,height=120,width=120,depth=120){
@@ -90,20 +145,12 @@ new THREE.MeshStandardMaterial({color:0x0077ff})
 body.position.y = 70;
 group.add(body);
 
-// คัปปลิ้ง
-const coupling = new THREE.Mesh(
-new THREE.CylinderGeometry(25,25,20,32),
-new THREE.MeshStandardMaterial({color:0x333333})
-);
-coupling.position.y = 120;
-group.add(coupling);
-
-// มอเตอร์ (ไม่ยาวเกิน)
+// มอเตอร์
 const motor = new THREE.Mesh(
 new THREE.CylinderGeometry(35,35,60,32),
 new THREE.MeshStandardMaterial({color:0x666666})
 );
-motor.position.y = 160;
+motor.position.y = 140;
 group.add(motor);
 
 // ท่อซ้าย
@@ -133,7 +180,7 @@ return group;
 
 // ===== Layout =====
 
-const CT = createBox(-300,-200,0x444444,140,140,140);
+const CT = createCoolingTower(-300,-200);
 const CH = createBox(0,-100,0x888888,160,160,160);
 const AHU = createBox(300,-200,0xddddcc,120,200,120);
 
@@ -144,6 +191,12 @@ const CHP = createPump(300,0);
 // ===== Animate =====
 function animate(){
 requestAnimationFrame(animate);
+
+// หมุนพัดลม CT
+if(CT.userData.fan){
+CT.userData.fan.rotation.y += 0.1;
+}
+
 controls.update();
 renderer.render(scene,camera);
 }
