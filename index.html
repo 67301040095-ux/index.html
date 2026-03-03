@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>3D Chiller System</title>
+<title>3D Chiller System - Full</title>
 <style>
 body { margin:0; overflow:hidden; background:#1e2228; }
 </style>
@@ -14,65 +14,93 @@ body { margin:0; overflow:hidden; background:#1e2228; }
 
 <script>
 
-// ===== Scene =====
+// ======================
+// SCENE
+// ======================
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x1e2228);
+
+const camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,5000);
+camera.position.set(0,600,1200);
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,5000);
-camera.position.set(0,600,1200);
-
 const controls = new THREE.OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
 
-// ===== Light =====
+// ======================
+// LIGHT
+// ======================
 scene.add(new THREE.AmbientLight(0xffffff,0.6));
 const light = new THREE.DirectionalLight(0xffffff,1);
 light.position.set(500,800,400);
 scene.add(light);
 
-// ===== Ground =====
+// ======================
+// GROUND
+// ======================
 const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(3000,3000),
+new THREE.PlaneGeometry(4000,4000),
 new THREE.MeshStandardMaterial({color:0xf0f0f0})
 );
 ground.rotation.x = -Math.PI/2;
 scene.add(ground);
 
-
-
-// ============================
+// ======================
 // COOLING TOWER
-// ============================
+// ======================
 function createCoolingTower(x,z){
 const group = new THREE.Group();
 
+const body = new THREE.Mesh(
+new THREE.BoxGeometry(200,300,200),
+new THREE.MeshStandardMaterial({color:0xcfd2d6})
+);
+body.position.y = 150;
+group.add(body);
+
 const base = new THREE.Mesh(
-new THREE.BoxGeometry(200,20,200),
+new THREE.BoxGeometry(220,20,220),
 new THREE.MeshStandardMaterial({color:0x555555})
 );
 base.position.y = 10;
 group.add(base);
 
-const tower = new THREE.Mesh(
-new THREE.BoxGeometry(150,200,150),
-new THREE.MeshStandardMaterial({color:0xcfd2d6})
+group.position.set(x,0,z);
+scene.add(group);
+}
+
+// ======================
+// CHILLER
+// ======================
+function createChiller(x,z){
+const group = new THREE.Group();
+
+const body = new THREE.Mesh(
+new THREE.BoxGeometry(500,200,200),
+new THREE.MeshStandardMaterial({color:0xdedede})
 );
-tower.position.y = 120;
-group.add(tower);
+body.position.y = 120;
+group.add(body);
+
+for(let i=0;i<12;i++){
+const grill = new THREE.Mesh(
+new THREE.BoxGeometry(420,4,4),
+new THREE.MeshStandardMaterial({color:0x888888})
+);
+grill.position.set(0,60+i*12,102);
+group.add(grill);
+}
 
 group.position.set(x,0,z);
 scene.add(group);
 }
 
-
-
-// ============================
+// ======================
 // VERTICAL PUMP
-// ============================
+// ======================
 function createPump(x,z){
 const group = new THREE.Group();
 
@@ -80,138 +108,103 @@ const base = new THREE.Mesh(
 new THREE.BoxGeometry(120,15,120),
 new THREE.MeshStandardMaterial({color:0x1a1a1a})
 );
-base.position.y = 7.5;
+base.position.y = 7;
 group.add(base);
 
 const body = new THREE.Mesh(
-new THREE.CylinderGeometry(40,40,90,32),
+new THREE.CylinderGeometry(40,40,120,32),
 new THREE.MeshStandardMaterial({color:0x0077ff})
 );
-body.position.y = 70;
+body.position.y = 80;
 group.add(body);
 
 const motor = new THREE.Mesh(
-new THREE.CylinderGeometry(35,35,60,32),
+new THREE.CylinderGeometry(35,35,70,32),
 new THREE.MeshStandardMaterial({color:0x666666})
 );
-motor.position.y = 150;
+motor.position.y = 170;
 group.add(motor);
 
 group.position.set(x,0,z);
 scene.add(group);
 }
 
-
-
-// ============================
+// ======================
 // AHU
-// ============================
+// ======================
 function createAHU(x,z){
 const group = new THREE.Group();
 
 const body = new THREE.Mesh(
-new THREE.BoxGeometry(260,160,140),
+new THREE.BoxGeometry(350,180,180),
 new THREE.MeshStandardMaterial({color:0xdedede})
 );
-body.position.y = 120;
+body.position.y = 110;
 group.add(body);
-
-const grillMat = new THREE.MeshStandardMaterial({color:0x888888});
-for(let i=0;i<10;i++){
-const grill = new THREE.Mesh(
-new THREE.BoxGeometry(220,4,4),
-grillMat
-);
-grill.position.set(0,80 + i*12,72);
-group.add(grill);
-}
 
 group.position.set(x,0,z);
 scene.add(group);
 }
 
-
-
-// ============================
-// CHILLER (เพิ่มใหม่)
-// ============================
-function createChiller(x,z){
-
-const group = new THREE.Group();
-
-// ฐาน
-const base = new THREE.Mesh(
-new THREE.BoxGeometry(600,40,260),
-new THREE.MeshStandardMaterial({color:0x444444})
+// ======================
+// EXPANSION TANK
+// ======================
+function createExpansionTank(x,z){
+const tank = new THREE.Mesh(
+new THREE.CylinderGeometry(60,60,200,32),
+new THREE.MeshStandardMaterial({color:0xaaaaaa})
 );
-base.position.y = 20;
-group.add(base);
+tank.position.set(x,100,z);
+scene.add(tank);
+}
 
-// ตัวเครื่อง
-const body = new THREE.Mesh(
-new THREE.BoxGeometry(560,200,240),
-new THREE.MeshStandardMaterial({color:0xe5e5e5})
+// ======================
+// WATER STORAGE TANK
+// ======================
+function createWaterTank(x,z){
+const tank = new THREE.Mesh(
+new THREE.CylinderGeometry(150,150,300,32),
+new THREE.MeshStandardMaterial({color:0xdddddd})
 );
-body.position.y = 140;
-group.add(body);
+tank.position.set(x,150,z);
+scene.add(tank);
+}
 
-// เสาแบ่ง panel
-for(let i=0;i<4;i++){
+// ======================
+// ELECTRICAL PANEL
+// ======================
+function createPanel(x,z){
 const panel = new THREE.Mesh(
-new THREE.BoxGeometry(8,180,240),
-new THREE.MeshStandardMaterial({color:0xcccccc})
-);
-panel.position.set(-210 + i*140,140,0);
-group.add(panel);
-}
-
-// grill หน้า
-for(let i=0;i<15;i++){
-const grill = new THREE.Mesh(
-new THREE.BoxGeometry(420,4,4),
-new THREE.MeshStandardMaterial({color:0x999999})
-);
-grill.position.set(0,80 + i*10,122);
-group.add(grill);
-}
-
-// compressor บนเครื่อง
-for(let i=0;i<2;i++){
-const comp = new THREE.Mesh(
-new THREE.CylinderGeometry(50,50,100,32),
-new THREE.MeshStandardMaterial({color:0x2f2f2f})
-);
-comp.position.set(-120 + i*240,260,0);
-group.add(comp);
-}
-
-// ท่อบน
-const pipe = new THREE.Mesh(
-new THREE.CylinderGeometry(18,18,380,32),
+new THREE.BoxGeometry(120,200,60),
 new THREE.MeshStandardMaterial({color:0xbbbbbb})
 );
-pipe.rotation.z = Math.PI/2;
-pipe.position.y = 300;
-group.add(pipe);
-
-group.position.set(x,0,z);
-scene.add(group);
+panel.position.set(x,100,z);
+scene.add(panel);
 }
 
-
-
-// ============================
+// ======================
 // LAYOUT
-// ============================
-createCoolingTower(-900,-700);
-createAHU(900,-700);
-createPump(-900,400);
-createPump(900,400);
-createChiller(0,0);
+// ======================
 
+createCoolingTower(-800,-900);
+createCoolingTower(800,-900);
 
+createChiller(0,-300);
 
-// ===== Animate =====
+createPump(-600,400);
+createPump(600,400);
+
+createAHU(0,700);
+
+createExpansionTank(-300,200);
+createExpansionTank(300,200);
+
+createWaterTank(0,1100);
+
+createPanel(-900,0);
+createPanel(900,0);
+
+// ======================
 function animate(){
 requestAnimationFrame(animate);
 controls.update();
