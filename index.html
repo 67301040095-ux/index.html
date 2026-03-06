@@ -3,13 +3,28 @@
 <head>
 <meta charset="utf-8">
 <title>3D Chiller System</title>
+
 <style>
-body { margin:0; overflow:hidden; background:#1e2228; }
+body{margin:0;overflow:hidden;background:#1e2228;}
+
+#panel{
+position:absolute;
+top:20px;
+left:20px;
+z-index:10;
+}
+
+button{
+font-size:18px;
+padding:10px 20px;
+margin-right:10px;
+}
 </style>
+
 </head>
 <body>
 
-<div style="position:absolute; top:20px; left:20px; z-index:10;">
+<div id="panel">
 <button onclick="startAuto()">START</button>
 <button onclick="stopAuto()">STOP</button>
 </div>
@@ -19,7 +34,10 @@ body { margin:0; overflow:hidden; background:#1e2228; }
 
 <script>
 
-// ===== Scene =====
+//=================
+// SCENE
+//=================
+
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x1e2228);
 
@@ -31,51 +49,66 @@ const camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeig
 camera.position.set(0,400,700);
 
 const controls = new THREE.OrbitControls(camera,renderer.domElement);
-controls.enableDamping = true;
+controls.enableDamping=true;
 
-// ===== Light =====
+
+//=================
+// LIGHT
+//=================
+
 scene.add(new THREE.AmbientLight(0xffffff,0.6));
-const light = new THREE.DirectionalLight(0xffffff,1);
+
+const light=new THREE.DirectionalLight(0xffffff,1);
 light.position.set(300,500,200);
 scene.add(light);
 
-// ===== Ground =====
-const ground = new THREE.Mesh(
+
+//=================
+// GROUND
+//=================
+
+const ground=new THREE.Mesh(
 new THREE.PlaneGeometry(2500,2000),
 new THREE.MeshStandardMaterial({color:0xf0f0f0})
 );
-ground.rotation.x = -Math.PI/2;
+
+ground.rotation.x=-Math.PI/2;
 scene.add(ground);
 
 
-// ============================
+//=================
 // COOLING TOWER
-// ============================
+//=================
 
 function createCoolingTower(x,z){
 
-const group = new THREE.Group();
+const group=new THREE.Group();
 
-const base = new THREE.Mesh(
+const base=new THREE.Mesh(
 new THREE.BoxGeometry(200,20,200),
 new THREE.MeshStandardMaterial({color:0x555555})
 );
-base.position.y = 10;
+base.position.y=10;
 group.add(base);
 
-const tower = new THREE.Mesh(
+const tower=new THREE.Mesh(
 new THREE.BoxGeometry(150,200,150),
 new THREE.MeshStandardMaterial({color:0xcfd2d6})
 );
-tower.position.y = 120;
+tower.position.y=120;
 group.add(tower);
 
-const deck = new THREE.Mesh(
-new THREE.BoxGeometry(170,15,170),
-new THREE.MeshStandardMaterial({color:0x888888})
+const fan=new THREE.Mesh(
+new THREE.CylinderGeometry(40,40,10,32),
+new THREE.MeshStandardMaterial({color:0x222222})
 );
-deck.position.y = 225;
-group.add(deck);
+
+fan.rotation.x=Math.PI/2;
+fan.position.y=235;
+
+group.add(fan);
+
+group.userData.fan=fan;
 
 group.position.set(x,0,z);
 scene.add(group);
@@ -85,34 +118,36 @@ return group;
 }
 
 
-// ============================
+//=================
 // PUMP
-// ============================
+//=================
 
 function createPump(x,z){
 
-const group = new THREE.Group();
+const group=new THREE.Group();
 
-const base = new THREE.Mesh(
+const base=new THREE.Mesh(
 new THREE.BoxGeometry(120,15,120),
 new THREE.MeshStandardMaterial({color:0x1a1a1a})
 );
-base.position.y = 7.5;
+base.position.y=7.5;
 group.add(base);
 
-const body = new THREE.Mesh(
+const body=new THREE.Mesh(
 new THREE.CylinderGeometry(40,40,90,32),
 new THREE.MeshStandardMaterial({color:0x0077ff})
 );
-body.position.y = 70;
+body.position.y=70;
 group.add(body);
 
-const motor = new THREE.Mesh(
+const motor=new THREE.Mesh(
 new THREE.CylinderGeometry(35,35,60,32),
 new THREE.MeshStandardMaterial({color:0x666666})
 );
-motor.position.y = 160;
+motor.position.y=160;
 group.add(motor);
+
+group.userData.motor=motor;
 
 group.position.set(x,0,z);
 scene.add(group);
@@ -122,20 +157,33 @@ return group;
 }
 
 
-// ============================
+//=================
 // AHU
-// ============================
+//=================
 
 function createAHU(x,z){
 
-const group = new THREE.Group();
+const group=new THREE.Group();
 
-const body = new THREE.Mesh(
+const body=new THREE.Mesh(
 new THREE.BoxGeometry(220,140,120),
 new THREE.MeshStandardMaterial({color:0xdedede})
 );
-body.position.y = 130;
+
+body.position.y=130;
 group.add(body);
+
+const fan=new THREE.Mesh(
+new THREE.CylinderGeometry(45,45,60,32),
+new THREE.MeshStandardMaterial({color:0x333333})
+);
+
+fan.rotation.z=Math.PI/2;
+fan.position.set(70,130,0);
+
+group.add(fan);
+
+group.userData.fan=fan;
 
 group.position.set(x,0,z);
 scene.add(group);
@@ -145,31 +193,34 @@ return group;
 }
 
 
-// ============================
+//=================
 // CHILLER
-// ============================
+//=================
 
 function createChiller(x,z){
 
-const group = new THREE.Group();
+const group=new THREE.Group();
 
-const base = new THREE.Mesh(
+const base=new THREE.Mesh(
 new THREE.BoxGeometry(520,30,240),
 new THREE.MeshStandardMaterial({color:0x444444})
 );
-base.position.y = 15;
+
+base.position.y=15;
 group.add(base);
 
-const evap = new THREE.Mesh(
+const evap=new THREE.Mesh(
 new THREE.CylinderGeometry(70,70,400,32),
 new THREE.MeshStandardMaterial({color:0x0b3d2e})
 );
-evap.rotation.z = Math.PI/2;
+
+evap.rotation.z=Math.PI/2;
 evap.position.set(0,80,0);
 group.add(evap);
 
-const cond = evap.clone();
-cond.position.y = 170;
+const cond=evap.clone();
+cond.position.y=170;
+
 group.add(cond);
 
 group.position.set(x,0,z);
@@ -180,22 +231,37 @@ return group;
 }
 
 
-// ===== Layout =====
+//=================
+// LAYOUT
+//=================
 
-createCoolingTower(-550,-300);
-createAHU(550,-300);
-createChiller(0,0);
-createPump(-500,280);
-createPump(500,280);
+const tower=createCoolingTower(-550,-300);
+const ahu=createAHU(550,-300);
+const chiller=createChiller(0,0);
+const pump1=createPump(-500,280);
+const pump2=createPump(500,280);
 
 
-// ===== AUTO SYSTEM =====
+//=================
+// AUTO SYSTEM
+//=================
 
 let startTime=null;
+
+let pumpRun=false;
+let coolingRun=false;
+let chillerRun=false;
+let ahuRun=false;
 
 function startAuto(){
 
 startTime=Date.now();
+
+pumpRun=false;
+coolingRun=false;
+chillerRun=false;
+ahuRun=false;
+
 console.log("SYSTEM START");
 
 }
@@ -203,6 +269,12 @@ console.log("SYSTEM START");
 function stopAuto(){
 
 startTime=null;
+
+pumpRun=false;
+coolingRun=false;
+chillerRun=false;
+ahuRun=false;
+
 console.log("SYSTEM STOP");
 
 }
@@ -214,30 +286,37 @@ if(!startTime) return;
 let t=(Date.now()-startTime)/1000;
 
 
-// 3 วิ
-if(t>3){
+// 3 sec
+if(t>3 && !pumpRun){
 
-console.log("CHP CDP PUMP RUN");
-
-}
-
-// 8 วิ
-if(t>8){
-
-console.log("COOLING TOWER FAN RUN");
+pumpRun=true;
+console.log("PUMP RUN");
 
 }
 
-// 13 วิ
-if(t>13){
 
+// 8 sec
+if(t>8 && !coolingRun){
+
+coolingRun=true;
+console.log("COOLING FAN RUN");
+
+}
+
+
+// 13 sec
+if(t>13 && !chillerRun){
+
+chillerRun=true;
 console.log("CHILLER RUN");
 
 }
 
-// 16 วิ
-if(t>16){
 
+// 16 sec
+if(t>16 && !ahuRun){
+
+ahuRun=true;
 console.log("AHU RUN");
 
 }
@@ -245,7 +324,9 @@ console.log("AHU RUN");
 }
 
 
-// ===== Animate =====
+//=================
+// ANIMATION
+//=================
 
 function animate(){
 
@@ -254,6 +335,25 @@ requestAnimationFrame(animate);
 controls.update();
 
 updateSystem();
+
+if(pumpRun){
+
+pump1.userData.motor.rotation.y+=0.1;
+pump2.userData.motor.rotation.y+=0.1;
+
+}
+
+if(coolingRun){
+
+tower.userData.fan.rotation.z+=0.2;
+
+}
+
+if(ahuRun){
+
+ahu.userData.fan.rotation.x+=0.2;
+
+}
 
 renderer.render(scene,camera);
 
