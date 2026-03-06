@@ -124,20 +124,21 @@ AHU.position.set(0,1,-10); // ไกลสุด
 scene.add(AHU);
 
 // =======================
-// PIPE SYSTEM
+// PIPE SYSTEM (แนวนอน)
 // =======================
 
-// function สร้างท่อ
-function createPipe(x,z,y1,y2,color){
+function pipe(x,z1,z2,color){
 
-const length = Math.abs(y2-y1);
+const length = Math.abs(z2-z1);
 
 const pipe = new THREE.Mesh(
 new THREE.CylinderGeometry(0.2,0.2,length,16),
 new THREE.MeshStandardMaterial({color:color})
 );
 
-pipe.position.set(x,(y1+y2)/2,z);
+pipe.rotation.x = Math.PI/2;
+
+pipe.position.set(x,1,(z1+z2)/2);
 
 scene.add(pipe);
 
@@ -145,28 +146,26 @@ scene.add(pipe);
 
 
 // ------------------
-// RED PIPE (ลง)
+// 🔴 SUPPLY
 // CT → AHU
 // ------------------
 
-createPipe(-1,10,2,1,0xff0000);   // CT
-createPipe(-1,6,2,1,0xff0000);    // CDP
-createPipe(-1,0,2,1,0xff0000);    // CH
-createPipe(-1,-6,2,1,0xff0000);   // CHP
-createPipe(-1,-10,2,1,0xff0000);  // AHU
+pipe(-1,10,6,0xff0000);   // CT → CDP
+pipe(-1,6,0,0xff0000);    // CDP → CH
+pipe(-1,0,-6,0xff0000);   // CH → CHP
+pipe(-1,-6,-10,0xff0000); // CHP → AHU
 
 
 
 // ------------------
-// BLUE PIPE (ขึ้น)
+// 🔵 RETURN
 // AHU → CT
 // ------------------
 
-createPipe(1,-10,1,2,0x00ffff);  // AHU
-createPipe(1,-6,1,2,0x00ffff);   // CHP
-createPipe(1,0,1,2,0x00ffff);    // CH
-createPipe(1,6,1,2,0x00ffff);    // CDP
-createPipe(1,10,1,2,0x00ffff);   // CT
+pipe(1,-10,-6,0x00ffff); // AHU → CHP
+pipe(1,-6,0,0x00ffff);   // CHP → CH
+pipe(1,0,6,0x00ffff);    // CH → CDP
+pipe(1,6,10,0x00ffff);   // CDP → CT
 
 // ANIMATE
 function animate(){
