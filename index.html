@@ -1,311 +1,203 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
 <title>Chiller SCADA</title>
 
 <style>
 body{
 margin:0;
-overflow:hidden;
-background:#1e2228;
+background:#111;
+color:white;
 font-family:Arial;
 }
 
-#panel{
+#ui{
 position:absolute;
 top:20px;
 left:20px;
-background:#ffffffcc;
-padding:10px;
-border-radius:6px;
+z-index:10;
 }
 
 button{
-padding:6px 12px;
-margin:4px;
+padding:10px;
+font-size:16px;
+margin-right:10px;
+}
+
+#temp{
+width:200px;
 }
 </style>
+
 </head>
 
 <body>
 
-<div id="panel">
+<div id="ui">
 
-<button onclick="startAuto()">START</button>
-<button onclick="stopAuto()">STOP</button>
+<button onclick="startSystem()">START</button>
+<button onclick="stopSystem()">STOP</button>
 
 <br><br>
 
 Temp :
-<input id="temp" type="range" min="35" max="60" value="44" step="1"
+<input type="range" id="temp" min="35" max="60" value="44"
 oninput="updateTemp(this.value)">
-
 <span id="tempValue">44°F</span>
+
+<br><br>
+
+<div id="status">SYSTEM READY</div>
 
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
 
 <script>
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x1e2228);
+
+const camera = new THREE.PerspectiveCamera(
+75,
+window.innerWidth/window.innerHeight,
+0.1,
+1000
+);
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
+
 renderer.setSize(window.innerWidth,window.innerHeight);
+
 document.body.appendChild(renderer.domElement);
 
-const camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,3000);
-camera.position.set(0,350,650);
+camera.position.set(0,6,12);
+camera.lookAt(0,0,0);
 
-const controls = new THREE.OrbitControls(camera,renderer.domElement);
-controls.enableDamping = true;
-
-scene.add(new THREE.AmbientLight(0xffffff,0.7));
 
 const light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(200,400,200);
+light.position.set(5,10,5);
 scene.add(light);
 
-const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(2000,2000),
-new THREE.MeshStandardMaterial({color:0xf0f0f0})
-);
-ground.rotation.x = -Math.PI/2;
-scene.add(ground);
+scene.add(new THREE.AmbientLight(0x404040));
 
 
 
-/* COOLING TOWER */
-
-let ctFan;
-
-function createCT(x,z){
-
-const g = new THREE.Group();
-
-const body = new THREE.Mesh(
-new THREE.BoxGeometry(120,180,120),
-new THREE.MeshStandardMaterial({color:0xcfd2d6})
+const floor = new THREE.Mesh(
+new THREE.PlaneGeometry(30,30),
+new THREE.MeshStandardMaterial({color:0xeeeeee})
 );
 
-body.position.y = 90;
-g.add(body);
+floor.rotation.x = -Math.PI/2;
 
-ctFan = new THREE.Mesh(
-new THREE.BoxGeometry(10,4,70),
-new THREE.MeshStandardMaterial({color:0x222222})
+scene.add(floor);
+
+
+
+function createBox(color,x,z){
+
+const mesh = new THREE.Mesh(
+
+new THREE.BoxGeometry(1.5,1.5,1.5),
+
+new THREE.MeshStandardMaterial({color:color})
+
 );
 
-ctFan.position.y = 180;
-g.add(ctFan);
+mesh.position.set(x,0.75,z);
 
-g.position.set(x,0,z);
-scene.add(g);
+scene.add(mesh);
+
+return mesh;
 
 }
 
 
-/* PUMP */
+function createCylinder(color,x,z){
 
-function createPump(x,z){
+const mesh = new THREE.Mesh(
 
-const g = new THREE.Group();
+new THREE.CylinderGeometry(0.6,0.6,1.5,32),
 
-const base = new THREE.Mesh(
-new THREE.CylinderGeometry(35,35,80,32),
-new THREE.MeshStandardMaterial({color:0x0077ff})
+new THREE.MeshStandardMaterial({color:color})
+
 );
 
-base.position.y = 40;
-g.add(base);
+mesh.position.set(x,0.75,z);
 
-g.position.set(x,0,z);
-scene.add(g);
+scene.add(mesh);
 
-return g;
-
-}
-
-
-/* CHILLER */
-
-let chillerBody;
-
-function createChiller(x,z){
-
-const g = new THREE.Group();
-
-chillerBody = new THREE.Mesh(
-new THREE.BoxGeometry(250,120,120),
-new THREE.MeshStandardMaterial({color:0x0b3d2e})
-);
-
-chillerBody.position.y = 60;
-g.add(chillerBody);
-
-g.position.set(x,0,z);
-scene.add(g);
-
-}
-
-
-/* AHU */
-
-let ahuFan;
-
-function createAHU(x,z){
-
-const g = new THREE.Group();
-
-const body = new THREE.Mesh(
-new THREE.BoxGeometry(200,100,100),
-new THREE.MeshStandardMaterial({color:0xdedede})
-);
-
-body.position.y = 60;
-g.add(body);
-
-ahuFan = new THREE.Mesh(
-new THREE.BoxGeometry(8,4,60),
-new THREE.MeshStandardMaterial({color:0x222222})
-);
-
-ahuFan.position.y = 60;
-g.add(ahuFan);
-
-g.position.set(x,0,z);
-scene.add(g);
+return mesh;
 
 }
 
 
 
-/* LAYOUT */
+const AHU = createBox(0xffffff,0,5);
 
-createCT(-350,-200);
+const CHP = createCylinder(0x2196f3,0,2.5);
 
-const CDP = createPump(-150,-50);
+const CH = createBox(0x2e7d32,0,0);
 
-createChiller(0,0);
+const CDP = createCylinder(0x2196f3,0,-2.5);
 
-const CHP = createPump(150,80);
-
-createAHU(350,200);
+const CT = createBox(0xffffff,0,-5);
 
 
 
-/* SYSTEM STATE */
-
-let startTime=null;
-
-let pumpOn=false;
-let ctOn=false;
-let chillerOn=false;
-let ahuOn=false;
-
-let temperature = 44;
-const designTemp = 44;
+let running = false;
 
 
-/* BUTTON */
 
-function startAuto(){
-startTime = Date.now();
-}
+function startSystem(){
 
-function stopAuto(){
-startTime=null;
+running = true;
 
-pumpOn=false;
-ctOn=false;
-chillerOn=false;
-ahuOn=false;
+document.getElementById("status").innerHTML = "SYSTEM RUNNING";
+
 }
 
 
+function stopSystem(){
 
-/* TEMP */
+running = false;
+
+document.getElementById("status").innerHTML = "SYSTEM STOP";
+
+}
+
+
 
 function updateTemp(v){
 
-temperature=v;
-document.getElementById("tempValue").innerText=v+"°F";
+document.getElementById("tempValue").innerHTML = v+"°F";
 
-}
+if(v < 44){
 
+document.getElementById("status").innerHTML = "CHILLER DOWN";
 
-
-/* AUTO LOGIC */
-
-function updateSystem(){
-
-if(!startTime) return;
-
-let t = (Date.now()-startTime)/1000;
-
-if(t>3){
-
-pumpOn=true;
-
-}
-
-if(t>8){
-
-ctOn=true;
-ahuOn=true;
-
-}
-
-if(t>13){
-
-if(temperature>=designTemp){
-
-chillerOn=true;
-
-}else{
-
-chillerOn=false;
-
-}
+running = false;
 
 }
 
 }
 
 
-
-/* ANIMATION */
 
 function animate(){
 
 requestAnimationFrame(animate);
 
-controls.update();
+if(running){
 
-updateSystem();
+CH.rotation.y += 0.02;
 
-if(ctOn){
+CHP.rotation.y += 0.1;
 
-ctFan.rotation.y +=0.2;
+CDP.rotation.y += 0.1;
 
-}
+CT.rotation.y += 0.01;
 
-if(ahuOn){
-
-ahuFan.rotation.y +=0.3;
-
-}
-
-if(chillerOn){
-
-chillerBody.material.color.set(0x00ffcc);
-
-}else{
-
-chillerBody.material.color.set(0x0b3d2e);
+AHU.rotation.y += 0.01;
 
 }
 
@@ -316,5 +208,6 @@ renderer.render(scene,camera);
 animate();
 
 </script>
+
 </body>
 </html>
