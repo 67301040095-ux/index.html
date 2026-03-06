@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
 <title>Chiller SCADA</title>
 
 <style>
@@ -13,268 +14,238 @@ font-family:Arial;
 overflow:hidden;
 }
 
-#ui{
+#panel{
 position:absolute;
-top:20px;
-left:20px;
-z-index:10;
-background:rgba(0,0,0,0.6);
-padding:15px;
+top:10px;
+left:10px;
+background:rgba(0,0,0,0.7);
+padding:10px;
 border-radius:10px;
 }
 
 button{
-padding:10px;
-font-size:16px;
-margin-right:10px;
+margin:3px;
+padding:6px 12px;
 }
 
-#temp{
-width:200px;
+#alarm{
+color:red;
+font-weight:bold;
 }
 
 </style>
-
 </head>
 
 <body>
 
-<div id="ui">
+<div id="panel">
 
 <button onclick="startSystem()">START</button>
 <button onclick="stopSystem()">STOP</button>
 
 <br><br>
 
-Temp :
-<input type="range" id="temp" min="35" max="60" value="44"
-oninput="updateTemp(this.value)">
-
+Temperature  
+<input id="temp" type="range" min="35" max="60" value="44">
 <span id="tempValue">44°F</span>
 
 <br><br>
 
-<div id="status">SYSTEM READY</div>
+<div id="alarm"></div>
 
 </div>
 
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/OrbitControls.js"></script>
 
 <script>
 
-const scene = new THREE.Scene();
+let running=false
 
-const camera = new THREE.PerspectiveCamera(
+const scene=new THREE.Scene()
+scene.background=new THREE.Color(0x202020)
+
+const camera=new THREE.PerspectiveCamera(
 75,
 window.innerWidth/window.innerHeight,
 0.1,
 1000
-);
+)
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth,window.innerHeight);
-document.body.appendChild(renderer.domElement);
+camera.position.set(8,6,10)
 
-camera.position.set(8,8,12);
+const renderer=new THREE.WebGLRenderer({antialias:true})
+renderer.setSize(window.innerWidth,window.innerHeight)
+document.body.appendChild(renderer.domElement)
 
-const controls = new THREE.OrbitControls(camera,renderer.domElement);
-controls.enableDamping = true;
+const controls=new THREE.OrbitControls(camera,renderer.domElement)
 
+const light=new THREE.DirectionalLight(0xffffff,1)
+light.position.set(10,10,10)
+scene.add(light)
 
+const amb=new THREE.AmbientLight(0x666666)
+scene.add(amb)
 
-const light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(10,10,5);
-scene.add(light);
+function box(w,h,d,color){
+const g=new THREE.BoxGeometry(w,h,d)
+const m=new THREE.MeshStandardMaterial({color:color})
+return new THREE.Mesh(g,m)
+}
 
-scene.add(new THREE.AmbientLight(0x404040));
+function cyl(r,h,color){
+const g=new THREE.CylinderGeometry(r,r,h,32)
+const m=new THREE.MeshStandardMaterial({color:color})
+return new THREE.Mesh(g,m)
+}
 
+function pipe(length,color){
+const g=new THREE.CylinderGeometry(0.1,0.1,length,16)
+const m=new THREE.MeshStandardMaterial({color:color})
+return new THREE.Mesh(g,m)
+}
 
+function fan(size,color){
+const g=new THREE.BoxGeometry(size,0.1,size)
+const m=new THREE.MeshStandardMaterial({color:color})
+return new THREE.Mesh(g,m)
+}
 
-const floor = new THREE.Mesh(
-new THREE.PlaneGeometry(40,40),
-new THREE.MeshStandardMaterial({color:0xeeeeee})
-);
+function impeller(){
+const g=new THREE.BoxGeometry(0.5,0.1,0.2)
+const m=new THREE.MeshStandardMaterial({color:0xffffff})
+return new THREE.Mesh(g,m)
+}
 
-floor.rotation.x = -Math.PI/2;
+const CT=box(2,1.5,2,0xdddddd)
+CT.position.y=5
+scene.add(CT)
 
-scene.add(floor);
+const CTfan=fan(1.5,0x333333)
+CTfan.position.y=5.8
+scene.add(CTfan)
 
+const CDP=cyl(0.5,1,0x0066ff)
+CDP.position.y=3.5
+scene.add(CDP)
 
+const CDPimp=impeller()
+CDPimp.position.set(0,3.5,0)
+scene.add(CDPimp)
 
-function box(color,x,z){
+const CH=box(2.5,1.5,2,0x00aa88)
+CH.position.y=2
+scene.add(CH)
 
-const m = new THREE.MeshStandardMaterial({color:color});
+const CHP=cyl(0.5,1,0x0066ff)
+CHP.position.y=0.5
+scene.add(CHP)
 
-const mesh = new THREE.Mesh(
-new THREE.BoxGeometry(2,2,2),
-m
-);
+const CHPimp=impeller()
+CHPimp.position.set(0,0.5,0)
+scene.add(CHPimp)
 
-mesh.position.set(x,1,z);
+const AHU=box(2,1.2,2,0x888888)
+AHU.position.y=-1
+scene.add(AHU)
 
-scene.add(mesh);
+const AHUfan=fan(1.5,0x333333)
+AHUfan.position.y=-0.4
+scene.add(AHUfan)
 
-return mesh;
+function makePipe(y1,y2,x,color){
+
+const len=Math.abs(y2-y1)
+
+const p=pipe(len,color)
+
+p.rotation.z=Math.PI/2
+p.position.set(x,(y1+y2)/2,0)
+
+scene.add(p)
 
 }
 
+makePipe(5,3.5,-1,0xff6600)
+makePipe(3.5,2,-1,0xff6600)
+makePipe(2,5,-1,0xff6600)
 
+makePipe(2,0.5,1,0x00ffff)
+makePipe(0.5,-1,1,0x00ffff)
+makePipe(-1,2,1,0x00ffff)
 
-function pump(color,x,z){
+const particles=[]
+const particleGeo=new THREE.SphereGeometry(0.07,8,8)
+const particleMat=new THREE.MeshBasicMaterial({color:0xffffff})
 
-const m = new THREE.MeshStandardMaterial({color:color});
+for(let i=0;i<30;i++){
 
-const mesh = new THREE.Mesh(
-new THREE.CylinderGeometry(0.8,0.8,2,32),
-m
-);
+const p=new THREE.Mesh(particleGeo,particleMat)
 
-mesh.position.set(x,1,z);
+p.position.set(-1,Math.random()*5,0)
 
-scene.add(mesh);
+scene.add(p)
 
-return mesh;
-
-}
-
-
-
-function pipe(x1,z1,x2,z2){
-
-const geometry = new THREE.BufferGeometry().setFromPoints([
-new THREE.Vector3(x1,1,z1),
-new THREE.Vector3(x2,1,z2)
-]);
-
-const material = new THREE.LineDashedMaterial({
-color:0x00ffff,
-dashSize:0.5,
-gapSize:0.3
-});
-
-const line = new THREE.Line(geometry,material);
-line.computeLineDistances();
-
-scene.add(line);
-
-return line;
+particles.push(p)
 
 }
-
-
-
-const AHU = box(0xffffff,0,6);
-
-const CHP = pump(0x2196f3,0,3);
-
-const CH = box(0x2e7d32,0,0);
-
-const CDP = pump(0x2196f3,0,-3);
-
-const CT = box(0xffffff,0,-6);
-
-
-
-const pipe1 = pipe(0,6,0,3);
-const pipe2 = pipe(0,3,0,0);
-const pipe3 = pipe(0,0,0,-3);
-const pipe4 = pipe(0,-3,0,-6);
-
-
-
-let running = false;
-
-
 
 function startSystem(){
-
-running = true;
-
-document.getElementById("status").innerHTML="SYSTEM RUNNING";
-
-AHU.material.color.set(0x00ff00);
-CH.material.color.set(0x00ff00);
-CT.material.color.set(0x00ff00);
-
+running=true
 }
-
-
 
 function stopSystem(){
-
-running = false;
-
-document.getElementById("status").innerHTML="SYSTEM STOP";
-
-AHU.material.color.set(0xffffff);
-CH.material.color.set(0x2e7d32);
-CT.material.color.set(0xffffff);
-
+running=false
+document.getElementById("alarm").innerHTML=""
 }
 
+const temp=document.getElementById("temp")
+const tempValue=document.getElementById("tempValue")
 
+temp.oninput=function(){
 
-function updateTemp(v){
+tempValue.innerHTML=this.value+"°F"
 
-document.getElementById("tempValue").innerHTML=v+"°F";
+if(this.value<44){
 
-if(v<44){
-
-running=false;
-
-document.getElementById("status").innerHTML="CHILLER DOWN";
-
-CH.material.color.set(0xff0000);
+running=false
+document.getElementById("alarm").innerHTML="🚨 CHILLER SHUTDOWN"
 
 }
 
 }
-
-
-
-let flow = 0;
-
-
 
 function animate(){
 
-requestAnimationFrame(animate);
-
-controls.update();
+requestAnimationFrame(animate)
 
 if(running){
 
-flow+=0.1;
+CTfan.rotation.y+=0.2
+AHUfan.rotation.y+=0.2
 
-pipe1.material.dashOffset = -flow;
-pipe2.material.dashOffset = -flow;
-pipe3.material.dashOffset = -flow;
-pipe4.material.dashOffset = -flow;
+CDPimp.rotation.y+=0.3
+CHPimp.rotation.y+=0.3
 
-CHP.rotation.y +=0.2;
-CDP.rotation.y +=0.2;
+particles.forEach(p=>{
+
+p.position.y-=0.05
+
+if(p.position.y<0){
+p.position.y=5
+}
+
+})
 
 }
 
-renderer.render(scene,camera);
+controls.update()
+
+renderer.render(scene,camera)
 
 }
 
-animate();
-
-
-
-window.addEventListener("resize",()=>{
-
-camera.aspect=window.innerWidth/window.innerHeight;
-camera.updateProjectionMatrix();
-
-renderer.setSize(window.innerWidth,window.innerHeight);
-
-});
+animate()
 
 </script>
 
