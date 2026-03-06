@@ -1,19 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-<title>CHILLER SYSTEM 3D LAYOUT</title>
+<title>CHILLER SYSTEM 3D</title>
 
 <style>
-
 body{
 margin:0;
 overflow:hidden;
 background:#111;
 }
-
 </style>
 
 </head>
@@ -25,32 +21,27 @@ background:#111;
 
 <script>
 
-// SCENE
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x1a1a1a);
+scene.background = new THREE.Color(0xeeeeee);
 
-// CAMERA
 const camera = new THREE.PerspectiveCamera(
 60,
 window.innerWidth/window.innerHeight,
 0.1,
-2000
+1000
 );
 
-camera.position.set(8,6,12);
+camera.position.set(10,8,12);
 
-// RENDERER
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// CONTROLS (360°)
 const controls = new THREE.OrbitControls(camera,renderer.domElement);
-controls.enableDamping = true;
 
 
 // LIGHT
-const ambient = new THREE.AmbientLight(0xffffff,0.6);
+const ambient = new THREE.AmbientLight(0xffffff,0.8);
 scene.add(ambient);
 
 const light = new THREE.DirectionalLight(0xffffff,1);
@@ -60,48 +51,105 @@ scene.add(light);
 
 // GROUND
 const ground = new THREE.Mesh(
-
 new THREE.PlaneGeometry(30,30),
-
-new THREE.MeshStandardMaterial({
-color:0x555555
-})
-
+new THREE.MeshStandardMaterial({color:0xcccccc})
 );
 
 ground.rotation.x = -Math.PI/2;
 scene.add(ground);
 
 
-// MACHINE FUNCTION
-function createMachine(x,y,z,color){
+// ----------------------
+// CT (Cooling Tower)
+// ----------------------
 
-const geo = new THREE.BoxGeometry(2,1,2);
+const CT = new THREE.Mesh(
 
-const mat = new THREE.MeshStandardMaterial({
-color:color
-});
+new THREE.BoxGeometry(3,2,3),
 
-const mesh = new THREE.Mesh(geo,mat);
+new THREE.MeshStandardMaterial({
+color:0x00aaff
+})
 
-mesh.position.set(x,y,z);
+);
 
-scene.add(mesh);
-
-}
-
-
-// LAYOUT
-
-createMachine(0,0,0,0x00ffff);   // CT
-createMachine(0,0,-3,0x00ff00);  // CDP
-createMachine(0,0,-6,0xffff00);  // CH
-createMachine(0,0,-9,0xff8800);  // CHP
-createMachine(0,0,-12,0xff0000); // AHU
+CT.position.set(0,1,4);
+scene.add(CT);
 
 
+// ----------------------
+// CDP (Pump)
+// ----------------------
 
-// ANIMATION
+const CDP = new THREE.Mesh(
+
+new THREE.CylinderGeometry(0.7,0.7,2,32),
+
+new THREE.MeshStandardMaterial({
+color:0x111111
+})
+
+);
+
+CDP.position.set(0,1,2);
+scene.add(CDP);
+
+
+// ----------------------
+// CH (Chiller)
+// ----------------------
+
+const CH = new THREE.Mesh(
+
+new THREE.BoxGeometry(4,2,2),
+
+new THREE.MeshStandardMaterial({
+color:0xffcc00
+})
+
+);
+
+CH.position.set(0,1,0);
+scene.add(CH);
+
+
+// ----------------------
+// CHP (Pump)
+// ----------------------
+
+const CHP = new THREE.Mesh(
+
+new THREE.CylinderGeometry(0.7,0.7,2,32),
+
+new THREE.MeshStandardMaterial({
+color:0x111111
+})
+
+);
+
+CHP.position.set(0,1,-2);
+scene.add(CHP);
+
+
+// ----------------------
+// AHU
+// ----------------------
+
+const AHU = new THREE.Mesh(
+
+new THREE.BoxGeometry(3,1.5,2),
+
+new THREE.MeshStandardMaterial({
+color:0xff3333
+})
+
+);
+
+AHU.position.set(0,0.8,-4);
+scene.add(AHU);
+
+
+// ANIMATE
 function animate(){
 
 requestAnimationFrame(animate);
