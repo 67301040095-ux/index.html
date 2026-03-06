@@ -63,10 +63,9 @@ scene.add(ground);
 // CT (Cooling Tower)
 // ----------------------
 
-// กลุ่ม Cooling Tower
 const CT = new THREE.Group();
 
-// ===== ฐาน =====
+// ฐาน
 const base = new THREE.Mesh(
   new THREE.BoxGeometry(3.5,0.5,3.5),
   new THREE.MeshStandardMaterial({color:0x555555})
@@ -74,7 +73,7 @@ const base = new THREE.Mesh(
 base.position.y = 0.25;
 CT.add(base);
 
-// ===== ตัว Tower =====
+// ตัว Tower
 const tower = new THREE.Mesh(
   new THREE.CylinderGeometry(1.5,1.8,2.5,8),
   new THREE.MeshStandardMaterial({color:0x00aaff})
@@ -82,56 +81,68 @@ const tower = new THREE.Mesh(
 tower.position.y = 1.75;
 CT.add(tower);
 
-// ===== Louver รอบ ๆ =====
+// Louver
 for(let i=0;i<8;i++){
+
   const louver = new THREE.Mesh(
     new THREE.BoxGeometry(1.8,0.2,0.1),
     new THREE.MeshStandardMaterial({color:0xffffff})
   );
 
   const angle = (i/8)*Math.PI*2;
+
   louver.position.set(
     Math.cos(angle)*1.4,
     1.3,
     Math.sin(angle)*1.4
   );
+
   louver.lookAt(0,1.3,0);
 
   CT.add(louver);
 }
 
-// ===== ฝาด้านบน =====
-const top = new THREE.Mesh(
+// ฝาบน (เปลี่ยนชื่อจาก top)
+const towerTop = new THREE.Mesh(
   new THREE.CylinderGeometry(1.6,1.6,0.2,8),
   new THREE.MeshStandardMaterial({color:0x444444})
 );
-top.position.y = 3.1;
-CT.add(top);
 
-// ===== พัดลม =====
+towerTop.position.y = 3.1;
+CT.add(towerTop);
+
+
+// พัดลม
 const fan = new THREE.Mesh(
   new THREE.CylinderGeometry(0.1,0.1,0.3,16),
   new THREE.MeshStandardMaterial({color:0x222222})
 );
+
 fan.rotation.x = Math.PI/2;
 fan.position.y = 3.2;
+
 CT.add(fan);
+
 
 // ใบพัด
 const blades = [];
 
 for(let i=0;i<4;i++){
+
   const blade = new THREE.Mesh(
     new THREE.BoxGeometry(0.1,1.5,0.2),
     new THREE.MeshStandardMaterial({color:0x222222})
   );
 
   blade.rotation.z = i*(Math.PI/2);
+
   fan.add(blade);
+
   blades.push(blade);
 }
 
-// ===== ตำแหน่ง Cooling Tower =====
+
+// ตำแหน่ง Cooling Tower
 CT.position.set(0,0,10);
 scene.add(CT);
 
@@ -145,7 +156,7 @@ new THREE.CylinderGeometry(0.7,0.7,2,32),
 new THREE.MeshStandardMaterial({color:0x111111})
 );
 
-CDP.position.set(1,1,6);  // เว้นระยะ
+CDP.position.set(1,1,6);
 scene.add(CDP);
 
 
@@ -158,7 +169,7 @@ new THREE.BoxGeometry(4,2,2),
 new THREE.MeshStandardMaterial({color:0xffcc00})
 );
 
-CH.position.set(0,1,0);   // กลาง
+CH.position.set(0,1,0);
 scene.add(CH);
 
 
@@ -171,7 +182,7 @@ new THREE.CylinderGeometry(0.7,0.7,2,32),
 new THREE.MeshStandardMaterial({color:0x111111})
 );
 
-CHP.position.set(1,1,-6);  // เว้นระยะ
+CHP.position.set(1,1,-6);
 scene.add(CHP);
 
 
@@ -184,11 +195,12 @@ new THREE.BoxGeometry(3,1.5,2),
 new THREE.MeshStandardMaterial({color:0xff3333})
 );
 
-AHU.position.set(0,1,-10); // ไกลสุด
+AHU.position.set(0,1,-10);
 scene.add(AHU);
 
+
 // =======================
-// PIPE SYSTEM (แนวนอน)
+// PIPE SYSTEM
 // =======================
 
 function pipe(x,z1,z2,color){
@@ -209,27 +221,19 @@ scene.add(pipe);
 }
 
 
-// ------------------
 // 🔴 SUPPLY
-// CT → AHU
-// ------------------
-
-pipe(-1,10,6,0xff0000);   // CT → CDP
-pipe(-1,6,0,0xff0000);    // CDP → CH
-pipe(-1,0,-6,0xff0000);   // CH → CHP
-pipe(-1,-6,-10,0xff0000); // CHP → AHU
+pipe(-1,10,6,0xff0000);
+pipe(-1,6,0,0xff0000);
+pipe(-1,0,-6,0xff0000);
+pipe(-1,-6,-10,0xff0000);
 
 
-
-// ------------------
 // 🔵 RETURN
-// AHU → CT
-// ------------------
+pipe(1,-10,-6,0x00ffff);
+pipe(1,-6,0,0x00ffff);
+pipe(1,0,6,0x00ffff);
+pipe(1,6,10,0x00ffff);
 
-pipe(1,-10,-6,0x00ffff); // AHU → CHP
-pipe(1,-6,0,0x00ffff);   // CHP → CH
-pipe(1,0,6,0x00ffff);    // CH → CDP
-pipe(1,6,10,0x00ffff);   // CDP → CT
 
 // ANIMATE
 function animate(){
