@@ -65,84 +65,103 @@ scene.add(ground);
 
 const CT = new THREE.Group();
 
+
 // ฐาน
 const base = new THREE.Mesh(
-  new THREE.BoxGeometry(3.5,0.5,3.5),
-  new THREE.MeshStandardMaterial({color:0x555555})
+  new THREE.BoxGeometry(4,0.5,4),
+  new THREE.MeshStandardMaterial({color:0x666666})
 );
 base.position.y = 0.25;
 CT.add(base);
 
-// ตัว Tower
-const tower = new THREE.Mesh(
-  new THREE.CylinderGeometry(1.5,1.8,2.5,8),
+
+// ตัว Tower ล่าง
+const towerLower = new THREE.Mesh(
+  new THREE.BoxGeometry(3.5,2,3.5),
   new THREE.MeshStandardMaterial({color:0x00aaff})
 );
-tower.position.y = 1.75;
-CT.add(tower);
+towerLower.position.y = 1.5;
+CT.add(towerLower);
 
-// Louver
-for(let i=0;i<8;i++){
 
-  const louver = new THREE.Mesh(
-    new THREE.BoxGeometry(1.8,0.2,0.1),
-    new THREE.MeshStandardMaterial({color:0xffffff})
-  );
+// ตัว Tower บานด้านบน
+const towerUpper = new THREE.Mesh(
+  new THREE.BoxGeometry(4.2,1.5,4.2),
+  new THREE.MeshStandardMaterial({color:0x0099dd})
+);
+towerUpper.position.y = 3;
+CT.add(towerUpper);
 
-  const angle = (i/8)*Math.PI*2;
 
-  louver.position.set(
-    Math.cos(angle)*1.4,
-    1.3,
-    Math.sin(angle)*1.4
-  );
+// Louver รอบด้าน
+for(let i=-1;i<=1;i++){
 
-  louver.lookAt(0,1.3,0);
-
-  CT.add(louver);
-}
-
-// ฝาบน (เปลี่ยนชื่อจาก top)
-const towerTop = new THREE.Mesh(
-  new THREE.CylinderGeometry(1.6,1.6,0.2,8),
-  new THREE.MeshStandardMaterial({color:0x444444})
+let l1 = new THREE.Mesh(
+new THREE.BoxGeometry(3.6,0.1,0.2),
+new THREE.MeshStandardMaterial({color:0xffffff})
 );
 
-towerTop.position.y = 3.1;
-CT.add(towerTop);
+l1.position.set(0,1+i*0.3,1.8);
+CT.add(l1);
+
+let l2 = l1.clone();
+l2.position.z = -1.8;
+CT.add(l2);
+
+let l3 = new THREE.Mesh(
+new THREE.BoxGeometry(0.2,0.1,3.6),
+new THREE.MeshStandardMaterial({color:0xffffff})
+);
+
+l3.position.set(1.8,1+i*0.3,0);
+CT.add(l3);
+
+let l4 = l3.clone();
+l4.position.x = -1.8;
+CT.add(l4);
+
+}
+
+
+// ฝาครอบพัดลม
+const fanCover = new THREE.Mesh(
+  new THREE.CylinderGeometry(1.5,1.5,0.3,32),
+  new THREE.MeshStandardMaterial({color:0x333333})
+);
+fanCover.position.y = 3.9;
+CT.add(fanCover);
 
 
 // พัดลม
-const fan = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.1,0.1,0.3,16),
+const fan = new THREE.Group();
+fan.position.y = 4;
+
+const hub = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.2,0.2,0.2,16),
   new THREE.MeshStandardMaterial({color:0x222222})
 );
+hub.rotation.x = Math.PI/2;
+fan.add(hub);
 
-fan.rotation.x = Math.PI/2;
-fan.position.y = 3.2;
+
+// ใบพัด
+for(let i=0;i<4;i++){
+
+const blade = new THREE.Mesh(
+new THREE.BoxGeometry(0.2,2,0.1),
+new THREE.MeshStandardMaterial({color:0x222222})
+);
+
+blade.rotation.z = i*(Math.PI/2);
+
+fan.add(blade);
+
+}
 
 CT.add(fan);
 
 
-// ใบพัด
-const blades = [];
-
-for(let i=0;i<4;i++){
-
-  const blade = new THREE.Mesh(
-    new THREE.BoxGeometry(0.1,1.5,0.2),
-    new THREE.MeshStandardMaterial({color:0x222222})
-  );
-
-  blade.rotation.z = i*(Math.PI/2);
-
-  fan.add(blade);
-
-  blades.push(blade);
-}
-
-
-// ตำแหน่ง Cooling Tower
+// ตำแหน่ง
 CT.position.set(0,0,10);
 scene.add(CT);
 
