@@ -122,7 +122,34 @@ new THREE.MeshStandardMaterial({color:0xff3333})
 
 AHU.position.set(0,1,-10); // ไกลสุด
 scene.add(AHU);
+// PIPE MATERIAL
+const pipeHot = new THREE.MeshStandardMaterial({color:0xff0000});
+const pipeCold = new THREE.MeshStandardMaterial({color:0x00ffff});
 
+function pipe(x,z,length,color){
+
+const p = new THREE.Mesh(
+new THREE.CylinderGeometry(0.2,0.2,length,16),
+color
+);
+
+p.position.set(x,length/2,z);
+scene.add(p);
+
+}
+
+// ------------------
+// HOT PIPE (แดง)
+// ------------------
+
+pipe(-1,0,20,pipeHot);
+
+
+// ------------------
+// COLD PIPE (ฟ้า)
+// ------------------
+
+pipe(1,0,20,pipeCold);
 
 // ANIMATE
 function animate(){
