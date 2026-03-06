@@ -10,16 +10,37 @@ margin:0;
 overflow:hidden;
 background:#111;
 }
+
+#ui{
+position:absolute;
+top:20px;
+left:20px;
+z-index:10;
+}
+
+button{
+padding:10px 20px;
+font-size:16px;
+margin-right:10px;
+cursor:pointer;
+}
 </style>
 
 </head>
 
 <body>
 
+<div id="ui">
+<button onclick="startSystem()">START</button>
+<button onclick="stopSystem()">STOP</button>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
 
 <script>
+
+let systemRun = false;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xeeeeee);
@@ -65,11 +86,10 @@ scene.add(ground);
 
 const CT = new THREE.Group();
 
-
 // ฐาน
 const base = new THREE.Mesh(
 new THREE.BoxGeometry(3,0.6,3),
-new THREE.MeshStandardMaterial({color:0x666666})
+new THREE.MeshStandardMaterial({color:0x777777})
 );
 base.position.y = 0.3;
 CT.add(base);
@@ -78,21 +98,21 @@ CT.add(base);
 // ส่วนล่าง
 const lower = new THREE.Mesh(
 new THREE.BoxGeometry(2.5,2.5,2.5),
-new THREE.MeshStandardMaterial({color:0x888888})
+new THREE.MeshStandardMaterial({color:0x999999})
 );
 lower.position.y = 1.8;
 CT.add(lower);
 
 
-// ช่องลม (louver)
+// louver
 for(let i=0;i<5;i++){
 
 const louver = new THREE.Mesh(
 new THREE.BoxGeometry(2.6,0.1,0.2),
-new THREE.MeshStandardMaterial({color:0xbbbbbb})
+new THREE.MeshStandardMaterial({color:0xdddddd})
 );
 
-louver.position.set(0,1 + (i*0.3),1.3);
+louver.position.set(0,1+(i*0.3),1.3);
 
 CT.add(louver);
 
@@ -102,35 +122,40 @@ CT.add(louver);
 // ส่วนบน
 const upper = new THREE.Mesh(
 new THREE.BoxGeometry(3,2.5,3),
-new THREE.MeshStandardMaterial({color:0x999999})
+new THREE.MeshStandardMaterial({color:0xaaaaaa})
 );
+
 upper.position.y = 4.3;
 CT.add(upper);
 
 
-// ฝาด้านบน
-const top = new THREE.Mesh(
+// ฝาบน
+const topCap = new THREE.Mesh(
 new THREE.CylinderGeometry(1.6,1.6,0.4,32),
 new THREE.MeshStandardMaterial({color:0x444444})
 );
-top.position.y = 5.8;
-CT.add(top);
+
+topCap.position.y = 5.8;
+CT.add(topCap);
 
 
-// พัดลม
+// ----------------------
+// FAN
+// ----------------------
+
 const fan = new THREE.Group();
 fan.position.y = 6;
 
 const hub = new THREE.Mesh(
-new THREE.CylinderGeometry(0.15,0.15,0.3,16),
+new THREE.CylinderGeometry(0.15,0.15,0.4,16),
 new THREE.MeshStandardMaterial({color:0x222222})
 );
 
-hub.rotation.z = Math.PI/2;
+hub.rotation.x = Math.PI/2;
 fan.add(hub);
 
 
-// ใบพัด
+// blades
 for(let i=0;i<4;i++){
 
 const blade = new THREE.Mesh(
@@ -138,7 +163,7 @@ new THREE.BoxGeometry(1.6,0.15,0.1),
 new THREE.MeshStandardMaterial({color:0x333333})
 );
 
-blade.rotation.y = i*(Math.PI/2);
+blade.rotation.z = i*(Math.PI/2);
 
 fan.add(blade);
 
@@ -147,13 +172,13 @@ fan.add(blade);
 CT.add(fan);
 
 
-// ตำแหน่ง
+// position
 CT.position.set(0,0,10);
-
 scene.add(CT);
-  
+
+
 // ----------------------
-// CDP (Pump)
+// CDP
 // ----------------------
 
 const CDP = new THREE.Mesh(
@@ -166,7 +191,7 @@ scene.add(CDP);
 
 
 // ----------------------
-// CH (Chiller)
+// CH
 // ----------------------
 
 const CH = new THREE.Mesh(
@@ -179,7 +204,7 @@ scene.add(CH);
 
 
 // ----------------------
-// CHP (Pump)
+// CHP
 // ----------------------
 
 const CHP = new THREE.Mesh(
@@ -204,9 +229,9 @@ AHU.position.set(0,1,-10);
 scene.add(AHU);
 
 
-// =======================
-// PIPE SYSTEM
-// =======================
+// ----------------------
+// PIPE
+// ----------------------
 
 function pipe(x,z1,z2,color){
 
@@ -226,26 +251,52 @@ scene.add(pipe);
 }
 
 
-// 🔴 SUPPLY
+// SUPPLY
 pipe(-1,10,6,0xff0000);
 pipe(-1,6,0,0xff0000);
 pipe(-1,0,-6,0xff0000);
 pipe(-1,-6,-10,0xff0000);
 
 
-// 🔵 RETURN
+// RETURN
 pipe(1,-10,-6,0x00ffff);
 pipe(1,-6,0,0x00ffff);
 pipe(1,0,6,0x00ffff);
 pipe(1,6,10,0x00ffff);
 
 
+// ----------------------
+// SYSTEM CONTROL
+// ----------------------
+
+function startSystem(){
+
+systemRun = true;
+
+}
+
+function stopSystem(){
+
+systemRun = false;
+
+}
+
+
+// ----------------------
 // ANIMATE
+// ----------------------
+
 function animate(){
 
 requestAnimationFrame(animate);
 
 controls.update();
+
+if(systemRun){
+
+fan.rotation.y += 0.3;
+
+}
 
 renderer.render(scene,camera);
 
