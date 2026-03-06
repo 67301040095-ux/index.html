@@ -8,10 +8,14 @@ body { margin:0; overflow:hidden; background:#1e2228; }
 </style>
 </head>
 <body>
+  <div style="position:absolute; top:20px; left:20px; z-index:10;">
+<button onclick="startAuto()">START</button>
+<button onclick="stopAuto()">STOP</button>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
-
+body
 <script>
 
 // ===== Scene =====
@@ -372,7 +376,12 @@ renderer.render(scene,camera);
 
 animate();
 startAuto();
-
+  
+function stopAuto(){
+startTime = null;
+console.log("SYSTEM STOP");
+}
+  
 </script>
 </body>
 </html>
