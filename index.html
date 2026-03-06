@@ -64,16 +64,11 @@ scene.add(ground);
 // ----------------------
 
 const CT = new THREE.Mesh(
-
 new THREE.BoxGeometry(3,2,3),
-
-new THREE.MeshStandardMaterial({
-color:0x00aaff
-})
-
+new THREE.MeshStandardMaterial({color:0x00aaff})
 );
 
-CT.position.set(0,1,4);
+CT.position.set(0,1,8);   // ขยับขึ้นไปไกลขึ้น
 scene.add(CT);
 
 
@@ -82,16 +77,11 @@ scene.add(CT);
 // ----------------------
 
 const CDP = new THREE.Mesh(
-
 new THREE.CylinderGeometry(0.7,0.7,2,32),
-
-new THREE.MeshStandardMaterial({
-color:0x111111
-})
-
+new THREE.MeshStandardMaterial({color:0x111111})
 );
 
-CDP.position.set(0,1,2);
+CDP.position.set(0,1,4);  // เว้นระยะ
 scene.add(CDP);
 
 
@@ -100,16 +90,11 @@ scene.add(CDP);
 // ----------------------
 
 const CH = new THREE.Mesh(
-
 new THREE.BoxGeometry(4,2,2),
-
-new THREE.MeshStandardMaterial({
-color:0xffcc00
-})
-
+new THREE.MeshStandardMaterial({color:0xffcc00})
 );
 
-CH.position.set(0,1,0);
+CH.position.set(0,1,0);   // กลาง
 scene.add(CH);
 
 
@@ -118,16 +103,11 @@ scene.add(CH);
 // ----------------------
 
 const CHP = new THREE.Mesh(
-
 new THREE.CylinderGeometry(0.7,0.7,2,32),
-
-new THREE.MeshStandardMaterial({
-color:0x111111
-})
-
+new THREE.MeshStandardMaterial({color:0x111111})
 );
 
-CHP.position.set(0,1,-2);
+CHP.position.set(0,1,-4);  // เว้นระยะ
 scene.add(CHP);
 
 
@@ -136,16 +116,11 @@ scene.add(CHP);
 // ----------------------
 
 const AHU = new THREE.Mesh(
-
 new THREE.BoxGeometry(3,1.5,2),
-
-new THREE.MeshStandardMaterial({
-color:0xff3333
-})
-
+new THREE.MeshStandardMaterial({color:0xff3333})
 );
 
-AHU.position.set(0,0.8,-4);
+AHU.position.set(0,0.8,-8); // ไกลสุด
 scene.add(AHU);
 
 
