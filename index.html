@@ -5,37 +5,20 @@
 <title>3D Chiller System</title>
 
 <style>
-body{
-margin:0;
-overflow:hidden;
-background:#1e2228;
-font-family:Arial;
-}
-
+body{margin:0;overflow:hidden;background:#1e2228;}
 #panel{
 position:absolute;
 top:20px;
 left:20px;
 z-index:10;
 }
-
 button{
-font-size:18px;
-padding:8px 15px;
-margin-right:10px;
-}
-
-#status{
-position:absolute;
-top:70px;
-left:20px;
-color:white;
-font-size:18px;
-background:#000000aa;
 padding:10px;
-border-radius:5px;
+font-size:16px;
+margin-right:5px;
 }
 </style>
+
 </head>
 
 <body>
@@ -45,285 +28,384 @@ border-radius:5px;
 <button onclick="stopAuto()">STOP</button>
 </div>
 
-<div id="status">SYSTEM READY</div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
 
 <script>
 
-// SCENE
-const scene=new THREE.Scene()
-scene.background=new THREE.Color(0x1e2228)
+// ================== SCENE ==================
 
-const renderer=new THREE.WebGLRenderer({antialias:true})
-renderer.setSize(window.innerWidth,window.innerHeight)
-document.body.appendChild(renderer.domElement)
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1e2228);
 
-const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,3000)
-camera.position.set(0,400,700)
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-const controls=new THREE.OrbitControls(camera,renderer.domElement)
-controls.enableDamping=true
+const camera = new THREE.PerspectiveCamera(
+60,
+window.innerWidth/window.innerHeight,
+0.1,
+3000
+);
+
+camera.position.set(0,400,700);
+
+const controls = new THREE.OrbitControls(camera,renderer.domElement);
+controls.enableDamping = true;
 
 
-// LIGHT
-scene.add(new THREE.AmbientLight(0xffffff,0.6))
+// ================== LIGHT ==================
 
-const light=new THREE.DirectionalLight(0xffffff,1)
-light.position.set(300,500,200)
-scene.add(light)
+scene.add(new THREE.AmbientLight(0xffffff,0.6));
+
+const light = new THREE.DirectionalLight(0xffffff,1);
+light.position.set(300,500,200);
+scene.add(light);
 
 
-// FLOOR
-const ground=new THREE.Mesh(
+// ================== GROUND ==================
+
+const ground = new THREE.Mesh(
 new THREE.PlaneGeometry(2500,2000),
 new THREE.MeshStandardMaterial({color:0xf0f0f0})
-)
+);
 
-ground.rotation.x=-Math.PI/2
-scene.add(ground)
-
-
-// VARIABLES
-let pump1
-let pump2
-let coolingFan
-let ahuFan
-
-let pumpRun=false
-let coolingRun=false
-let chillerRun=false
-let ahuRun=false
-
-let startTime=null
-
-const status=document.getElementById("status")
+ground.rotation.x = -Math.PI/2;
+scene.add(ground);
 
 
-// COOLING TOWER
+// ================== SYSTEM STATE ==================
+
+let CHP=false;
+let CDP=false;
+let coolingFan=false;
+let chiller=false;
+let AHU=false;
+
+let startTime=null;
+
+
+// ================== RUN LIGHT ==================
+
+function createRunLight(x,y,z){
+
+const light=new THREE.Mesh(
+
+new THREE.SphereGeometry(10,16,16),
+
+new THREE.MeshStandardMaterial({color:0x003300})
+
+);
+
+light.position.set(x,y,z);
+
+scene.add(light);
+
+return light;
+
+}
+
+
+// ================== COOLING TOWER ==================
+
 function createCoolingTower(x,z){
 
-const group=new THREE.Group()
+const group=new THREE.Group();
+
+const base=new THREE.Mesh(
+
+new THREE.BoxGeometry(200,20,200),
+
+new THREE.MeshStandardMaterial({color:0x555555})
+
+);
+
+base.position.y=10;
+
+group.add(base);
 
 const tower=new THREE.Mesh(
+
 new THREE.BoxGeometry(150,200,150),
+
 new THREE.MeshStandardMaterial({color:0xcfd2d6})
-)
 
-tower.position.y=120
-group.add(tower)
+);
 
-coolingFan=new THREE.Mesh(
-new THREE.CylinderGeometry(45,45,10,32),
+tower.position.y=120;
+
+group.add(tower);
+
+const fan=new THREE.Mesh(
+
+new THREE.CylinderGeometry(50,50,10,32),
+
 new THREE.MeshStandardMaterial({color:0x222222})
-)
 
-coolingFan.rotation.x=Math.PI/2
-coolingFan.position.y=230
+);
 
-group.add(coolingFan)
+fan.rotation.x=Math.PI/2;
 
-group.position.set(x,0,z)
-scene.add(group)
+fan.position.y=230;
+
+group.add(fan);
+
+group.position.set(x,0,z);
+
+scene.add(group);
+
+return {group,fan};
 
 }
 
 
-// PUMP
+// ================== PUMP ==================
+
 function createPump(x,z){
 
-const group=new THREE.Group()
+const group=new THREE.Group();
 
 const body=new THREE.Mesh(
+
 new THREE.CylinderGeometry(40,40,90,32),
+
 new THREE.MeshStandardMaterial({color:0x0077ff})
-)
 
-body.position.y=70
-group.add(body)
+);
 
-group.position.set(x,0,z)
-scene.add(group)
+body.position.y=60;
 
-return group
+group.add(body);
+
+const motor=new THREE.Mesh(
+
+new THREE.CylinderGeometry(35,35,60,32),
+
+new THREE.MeshStandardMaterial({color:0x666666})
+
+);
+
+motor.position.y=130;
+
+group.add(motor);
+
+group.position.set(x,0,z);
+
+scene.add(group);
+
+return group;
 
 }
 
 
-// AHU
+// ================== AHU ==================
+
 function createAHU(x,z){
 
-const group=new THREE.Group()
+const group=new THREE.Group();
 
 const body=new THREE.Mesh(
+
 new THREE.BoxGeometry(220,140,120),
+
 new THREE.MeshStandardMaterial({color:0xdedede})
-)
 
-body.position.y=130
-group.add(body)
+);
 
-ahuFan=new THREE.Mesh(
-new THREE.CylinderGeometry(40,40,20,32),
+body.position.y=120;
+
+group.add(body);
+
+const fan=new THREE.Mesh(
+
+new THREE.CylinderGeometry(45,45,20,32),
+
 new THREE.MeshStandardMaterial({color:0x333333})
-)
 
-ahuFan.rotation.z=Math.PI/2
-ahuFan.position.set(70,130,0)
+);
 
-group.add(ahuFan)
+fan.rotation.z=Math.PI/2;
 
-group.position.set(x,0,z)
-scene.add(group)
+fan.position.set(80,120,0);
+
+group.add(fan);
+
+group.position.set(x,0,z);
+
+scene.add(group);
+
+return {group,fan};
 
 }
 
 
-// CHILLER
+// ================== CHILLER ==================
+
 function createChiller(x,z){
 
-const group=new THREE.Group()
+const group=new THREE.Group();
 
 const evap=new THREE.Mesh(
+
 new THREE.CylinderGeometry(70,70,400,32),
+
 new THREE.MeshStandardMaterial({color:0x0b3d2e})
-)
 
-evap.rotation.z=Math.PI/2
-evap.position.set(0,80,0)
+);
 
-group.add(evap)
+evap.rotation.z=Math.PI/2;
 
-const cond=evap.clone()
-cond.position.y=170
+evap.position.set(0,80,0);
 
-group.add(cond)
+group.add(evap);
 
-group.position.set(x,0,z)
+const cond=evap.clone();
 
-scene.add(group)
+cond.position.y=170;
+
+group.add(cond);
+
+group.position.set(x,0,z);
+
+scene.add(group);
+
+return group;
 
 }
 
 
-// LAYOUT
-createCoolingTower(-550,-300)
-createAHU(550,-300)
-createChiller(0,0)
+// ================== CREATE EQUIPMENT ==================
 
-pump1=createPump(-500,280)
-pump2=createPump(500,280)
+const cooling=createCoolingTower(-550,-300);
+const ahu=createAHU(550,-300);
+const chillerObj=createChiller(0,0);
+
+const pump1=createPump(-500,280);
+const pump2=createPump(500,280);
 
 
-// AUTO SYSTEM
+// ================== RUN LIGHT ==================
+
+const pumpLight1=createRunLight(-500,160,280);
+const pumpLight2=createRunLight(500,160,280);
+
+const coolingLight=createRunLight(-550,260,-300);
+const chillerLight=createRunLight(0,200,0);
+const ahuLight=createRunLight(550,200,-300);
+
+
+// ================== AUTO FUNCTION ==================
+
 function startAuto(){
 
-startTime=Date.now()
+console.log("SYSTEM START");
 
-pumpRun=false
-coolingRun=false
-chillerRun=false
-ahuRun=false
-
-status.innerHTML="SYSTEM START"
+startTime=Date.now();
 
 }
-
 
 function stopAuto(){
 
-startTime=null
+console.log("SYSTEM STOP");
 
-pumpRun=false
-coolingRun=false
-chillerRun=false
-ahuRun=false
-
-status.innerHTML="SYSTEM STOP"
+startTime=null;
 
 }
 
 
-// CONTROL LOGIC
+// ================== SEQUENCE ==================
+
 function updateSystem(){
 
-if(!startTime)return
+if(!startTime) return;
 
-let t=(Date.now()-startTime)/1000
-
-
-if(t>3 && !pumpRun){
-
-pumpRun=true
-status.innerHTML="PUMP RUNNING"
-
-}
+let t=(Date.now()-startTime)/1000;
 
 
-if(t>8 && !coolingRun){
+// 3s Pump
 
-coolingRun=true
-status.innerHTML="COOLING TOWER FAN RUN"
+if(t>3 && !CHP){
 
-}
+CHP=true;
+CDP=true;
 
+pumpLight1.material.color.set(0x00ff00);
+pumpLight2.material.color.set(0x00ff00);
 
-if(t>13 && !chillerRun){
-
-chillerRun=true
-status.innerHTML="CHILLER RUN"
+console.log("Pump RUN");
 
 }
 
 
-if(t>16 && !ahuRun){
+// 8s Cooling Tower
 
-ahuRun=true
-status.innerHTML="AHU FAN RUN"
+if(t>8 && !coolingFan){
+
+coolingFan=true;
+
+coolingLight.material.color.set(0x00ff00);
+
+console.log("Cooling Tower RUN");
+
+}
+
+
+// 13s Chiller
+
+if(t>13 && !chiller){
+
+chiller=true;
+
+chillerLight.material.color.set(0x00ff00);
+
+console.log("Chiller RUN");
+
+}
+
+
+// 16s AHU
+
+if(t>16 && !AHU){
+
+AHU=true;
+
+ahuLight.material.color.set(0x00ff00);
+
+console.log("AHU RUN");
 
 }
 
 }
 
 
-// ANIMATION
+// ================== ANIMATE ==================
+
 function animate(){
 
-requestAnimationFrame(animate)
+requestAnimationFrame(animate);
 
-controls.update()
+controls.update();
 
-updateSystem()
+updateSystem();
 
+if(coolingFan){
 
-if(pumpRun){
-
-pump1.rotation.y+=0.05
-pump2.rotation.y+=0.05
+cooling.fan.rotation.z+=0.2;
 
 }
 
+if(AHU){
 
-if(coolingRun){
-
-coolingFan.rotation.z+=0.2
-
-}
-
-
-if(ahuRun){
-
-ahuFan.rotation.y+=0.2
+ahu.fan.rotation.x+=0.2;
 
 }
 
-
-renderer.render(scene,camera)
+renderer.render(scene,camera);
 
 }
 
-animate()
+animate();
 
 </script>
 
