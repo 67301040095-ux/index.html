@@ -1,164 +1,112 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
-<title>Chiller SCADA</title>
+<title>CHILLER SYSTEM 3D LAYOUT</title>
 
 <style>
+
 body{
 margin:0;
-background:#0b0f1a;
 overflow:hidden;
-font-family:Arial;
-}
-
-#panel{
-position:absolute;
-top:20px;
-left:20px;
 background:#111;
-padding:15px;
-border-radius:10px;
-color:white;
 }
 
-button{
-padding:8px 15px;
-margin-right:5px;
-}
 </style>
 
 </head>
 
 <body>
 
-<div id="panel">
-
-<button onclick="startSystem()">START</button>
-<button onclick="stopSystem()">STOP</button>
-
-<br><br>
-
-Temperature
-<input type="range" min="38" max="50" value="44" id="temp">
-<span id="tempValue">44°F</span>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
 
 <script>
 
+// SCENE
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0b0f1a);
+scene.background = new THREE.Color(0x1a1a1a);
 
+// CAMERA
 const camera = new THREE.PerspectiveCamera(
 60,
 window.innerWidth/window.innerHeight,
 0.1,
-1000
+2000
 );
 
-camera.position.set(6,6,12);
+camera.position.set(8,6,12);
 
+// RENDERER
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+// CONTROLS (360°)
+const controls = new THREE.OrbitControls(camera,renderer.domElement);
+controls.enableDamping = true;
+
+
+// LIGHT
+const ambient = new THREE.AmbientLight(0xffffff,0.6);
+scene.add(ambient);
+
 const light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(10,10,10);
+light.position.set(10,20,10);
 scene.add(light);
 
-scene.add(new THREE.AmbientLight(0xffffff,0.5));
 
-function box(w,h,d,color){
+// GROUND
+const ground = new THREE.Mesh(
 
-const mesh = new THREE.Mesh(
-new THREE.BoxGeometry(w,h,d),
-new THREE.MeshStandardMaterial({color:color})
+new THREE.PlaneGeometry(30,30),
+
+new THREE.MeshStandardMaterial({
+color:0x555555
+})
+
 );
+
+ground.rotation.x = -Math.PI/2;
+scene.add(ground);
+
+
+// MACHINE FUNCTION
+function createMachine(x,y,z,color){
+
+const geo = new THREE.BoxGeometry(2,1,2);
+
+const mat = new THREE.MeshStandardMaterial({
+color:color
+});
+
+const mesh = new THREE.Mesh(geo,mat);
+
+mesh.position.set(x,y,z);
 
 scene.add(mesh);
-return mesh;
 
 }
 
-function pump(){
 
-const mesh = new THREE.Mesh(
-new THREE.CylinderGeometry(0.4,0.4,1,32),
-new THREE.MeshStandardMaterial({color:0x0066ff})
-);
+// LAYOUT
 
-scene.add(mesh);
-return mesh;
+createMachine(0,0,0,0x00ffff);   // CT
+createMachine(0,0,-3,0x00ff00);  // CDP
+createMachine(0,0,-6,0xffff00);  // CH
+createMachine(0,0,-9,0xff8800);  // CHP
+createMachine(0,0,-12,0xff0000); // AHU
 
-}
 
-/* equipment */
 
-const CT = box(2,2,2,0xffffff);
-CT.position.set(0,2,0);
-
-const CDP = pump();
-CDP.position.set(0,0,0);
-
-const CH = box(2,2,3,0x00aa88);
-CH.position.set(0,-2,0);
-
-const CHP = pump();
-CHP.position.set(0,-4,0);
-
-const AHU = box(2,2,2,0x888888);
-AHU.position.set(0,-6,0);
-
-/* fan */
-
-const fan = new THREE.Mesh(
-new THREE.BoxGeometry(1.5,0.1,0.2),
-new THREE.MeshStandardMaterial({color:0x000000})
-);
-
-fan.position.copy(CT.position);
-fan.position.y+=1.5;
-scene.add(fan);
-
-const ahuFan = new THREE.Mesh(
-new THREE.BoxGeometry(1.5,0.1,0.2),
-new THREE.MeshStandardMaterial({color:0x000000})
-);
-
-ahuFan.position.copy(AHU.position);
-ahuFan.position.y+=1.5;
-scene.add(ahuFan);
-
-let running=false;
-
-function startSystem(){
-running=true;
-}
-
-function stopSystem(){
-running=false;
-}
-
-const temp=document.getElementById("temp");
-const tempValue=document.getElementById("tempValue");
-
-temp.oninput=function(){
-tempValue.innerText=this.value+"°F";
-}
-
+// ANIMATION
 function animate(){
 
 requestAnimationFrame(animate);
 
-if(running){
-
-fan.rotation.y+=0.2;
-ahuFan.rotation.y+=0.2;
-
-}
+controls.update();
 
 renderer.render(scene,camera);
 
