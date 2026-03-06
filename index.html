@@ -3,36 +3,15 @@
 <head>
 <meta charset="utf-8">
 <title>3D Chiller System</title>
-
 <style>
-body{
-margin:0;
-overflow:hidden;
-background:#1e2228;
-}
-
-#ui{
-position:absolute;
-top:20px;
-left:20px;
-z-index:10;
-}
-
-#status{
-color:white;
-margin-top:10px;
-font-family:Arial;
-font-size:18px;
-}
+body { margin:0; overflow:hidden; background:#1e2228; }
 </style>
 </head>
-
 <body>
 
-<div id="ui">
+<div style="position:absolute; top:20px; left:20px; z-index:10;">
 <button onclick="startAuto()">START</button>
 <button onclick="stopAuto()">STOP</button>
-<div id="status">SYSTEM READY</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -40,10 +19,7 @@ font-size:18px;
 
 <script>
 
-// ====================
-// SCENE
-// ====================
-
+// ===== Scene =====
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x1e2228);
 
@@ -51,188 +27,225 @@ const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const camera = new THREE.PerspectiveCamera(
-60,
-window.innerWidth/window.innerHeight,
-0.1,
-3000
-);
-
+const camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,3000);
 camera.position.set(0,400,700);
 
 const controls = new THREE.OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
 
-
-// ====================
-// LIGHT
-// ====================
-
+// ===== Light =====
 scene.add(new THREE.AmbientLight(0xffffff,0.6));
-
 const light = new THREE.DirectionalLight(0xffffff,1);
 light.position.set(300,500,200);
 scene.add(light);
 
-
-// ====================
-// GROUND
-// ====================
-
+// ===== Ground =====
 const ground = new THREE.Mesh(
 new THREE.PlaneGeometry(2500,2000),
 new THREE.MeshStandardMaterial({color:0xf0f0f0})
 );
-
 ground.rotation.x = -Math.PI/2;
 scene.add(ground);
 
 
-// ====================
+// ============================
 // COOLING TOWER
-// ====================
+// ============================
 
 function createCoolingTower(x,z){
+
+const group = new THREE.Group();
+
+const base = new THREE.Mesh(
+new THREE.BoxGeometry(200,20,200),
+new THREE.MeshStandardMaterial({color:0x555555})
+);
+base.position.y = 10;
+group.add(base);
 
 const tower = new THREE.Mesh(
 new THREE.BoxGeometry(150,200,150),
 new THREE.MeshStandardMaterial({color:0xcfd2d6})
 );
+tower.position.y = 120;
+group.add(tower);
 
-tower.position.set(x,100,z);
-scene.add(tower);
+const deck = new THREE.Mesh(
+new THREE.BoxGeometry(170,15,170),
+new THREE.MeshStandardMaterial({color:0x888888})
+);
+deck.position.y = 225;
+group.add(deck);
+
+group.position.set(x,0,z);
+scene.add(group);
+
+return group;
 
 }
 
 
-// ====================
+// ============================
 // PUMP
-// ====================
+// ============================
 
 function createPump(x,z){
 
-const pump = new THREE.Mesh(
+const group = new THREE.Group();
+
+const base = new THREE.Mesh(
+new THREE.BoxGeometry(120,15,120),
+new THREE.MeshStandardMaterial({color:0x1a1a1a})
+);
+base.position.y = 7.5;
+group.add(base);
+
+const body = new THREE.Mesh(
 new THREE.CylinderGeometry(40,40,90,32),
 new THREE.MeshStandardMaterial({color:0x0077ff})
 );
+body.position.y = 70;
+group.add(body);
 
-pump.position.set(x,45,z);
-scene.add(pump);
+const motor = new THREE.Mesh(
+new THREE.CylinderGeometry(35,35,60,32),
+new THREE.MeshStandardMaterial({color:0x666666})
+);
+motor.position.y = 160;
+group.add(motor);
+
+group.position.set(x,0,z);
+scene.add(group);
+
+return group;
 
 }
 
 
-// ====================
+// ============================
 // AHU
-// ====================
+// ============================
 
 function createAHU(x,z){
 
-const ahu = new THREE.Mesh(
+const group = new THREE.Group();
+
+const body = new THREE.Mesh(
 new THREE.BoxGeometry(220,140,120),
 new THREE.MeshStandardMaterial({color:0xdedede})
 );
+body.position.y = 130;
+group.add(body);
 
-ahu.position.set(x,70,z);
-scene.add(ahu);
+group.position.set(x,0,z);
+scene.add(group);
+
+return group;
 
 }
 
 
-// ====================
+// ============================
 // CHILLER
-// ====================
+// ============================
 
 function createChiller(x,z){
 
-const chiller = new THREE.Mesh(
+const group = new THREE.Group();
+
+const base = new THREE.Mesh(
+new THREE.BoxGeometry(520,30,240),
+new THREE.MeshStandardMaterial({color:0x444444})
+);
+base.position.y = 15;
+group.add(base);
+
+const evap = new THREE.Mesh(
 new THREE.CylinderGeometry(70,70,400,32),
 new THREE.MeshStandardMaterial({color:0x0b3d2e})
 );
+evap.rotation.z = Math.PI/2;
+evap.position.set(0,80,0);
+group.add(evap);
 
-chiller.rotation.z = Math.PI/2;
-chiller.position.set(x,80,z);
-scene.add(chiller);
+const cond = evap.clone();
+cond.position.y = 170;
+group.add(cond);
+
+group.position.set(x,0,z);
+scene.add(group);
+
+return group;
 
 }
 
 
-// ====================
-// LAYOUT
-// ====================
+// ===== Layout =====
 
 createCoolingTower(-550,-300);
 createAHU(550,-300);
-
 createChiller(0,0);
-
 createPump(-500,280);
 createPump(500,280);
 
 
-// ====================
-// AUTO SYSTEM
-// ====================
+// ===== AUTO SYSTEM =====
 
-let startTime = null;
+let startTime=null;
 
 function startAuto(){
 
-startTime = Date.now();
-
-document.getElementById("status").innerHTML="SYSTEM START";
-
+startTime=Date.now();
 console.log("SYSTEM START");
 
 }
 
 function stopAuto(){
 
-startTime = null;
-
-document.getElementById("status").innerHTML="SYSTEM STOP";
-
+startTime=null;
 console.log("SYSTEM STOP");
 
 }
-
 
 function updateSystem(){
 
 if(!startTime) return;
 
-let t = (Date.now() - startTime)/1000;
+let t=(Date.now()-startTime)/1000;
 
 
-// 3 วิ ปั้ม
+// 3 วิ
 if(t>3){
-document.getElementById("status").innerHTML="PUMP RUN";
+
+console.log("CHP CDP PUMP RUN");
+
 }
 
-
-// 8 วิ Cooling Tower
+// 8 วิ
 if(t>8){
-document.getElementById("status").innerHTML="COOLING TOWER FAN RUN";
+
+console.log("COOLING TOWER FAN RUN");
+
 }
 
-
-// 13 วิ Chiller
+// 13 วิ
 if(t>13){
-document.getElementById("status").innerHTML="CHILLER RUN";
+
+console.log("CHILLER RUN");
+
 }
 
-
-// 16 วิ AHU
+// 16 วิ
 if(t>16){
-document.getElementById("status").innerHTML="AHU RUN";
-}
+
+console.log("AHU RUN");
 
 }
 
+}
 
-// ====================
-// ANIMATE
-// ====================
+
+// ===== Animate =====
 
 function animate(){
 
@@ -249,6 +262,5 @@ renderer.render(scene,camera);
 animate();
 
 </script>
-
 </body>
 </html>
