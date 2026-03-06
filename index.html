@@ -132,15 +132,15 @@ fanCover.position.y = 5.5;
 CT.add(fanCover);
 
 
-// พัดลม
+// ===== พัดลม =====
 const fan = new THREE.Group();
 fan.position.y = 5.7;
 
 const hub = new THREE.Mesh(
   new THREE.CylinderGeometry(0.15,0.15,0.2,16),
-  new THREE.MeshStandardMaterial({color:0x222222})
+  new THREE.MeshStandardMaterial({color:0xff0000}) // สีพัดลม
 );
-hub.rotation.x = Math.PI/2;
+hub.rotation.z = Math.PI/2;
 fan.add(hub);
 
 
@@ -148,13 +148,17 @@ fan.add(hub);
 for(let i=0;i<4;i++){
 
 const blade = new THREE.Mesh(
-new THREE.BoxGeometry(0.15,1.2,0.08),
+new THREE.BoxGeometry(1.2,0.15,0.08),
 new THREE.MeshStandardMaterial({color:0x222222})
 );
 
-blade.rotation.z = i*(Math.PI/2);
+blade.rotation.y = i*(Math.PI/2);
+
 fan.add(blade);
 
+}
+
+CT.add(fan);
 }
 
 CT.add(fan);
