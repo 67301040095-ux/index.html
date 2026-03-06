@@ -151,7 +151,7 @@ new THREE.CylinderGeometry(0.15,0.15,0.4,16),
 new THREE.MeshStandardMaterial({color:0x222222})
 );
 
-hub.rotation.x = Math.PI/2;
+hub.rotation.z = Math.PI/2;
 fan.add(hub);
 
 
@@ -163,7 +163,7 @@ new THREE.BoxGeometry(1.6,0.15,0.1),
 new THREE.MeshStandardMaterial({color:0x333333})
 );
 
-blade.rotation.z = i*(Math.PI/2);
+blade.rotation.y = i*(Math.PI/2);
 
 fan.add(blade);
 
