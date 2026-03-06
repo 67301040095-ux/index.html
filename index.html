@@ -1,4 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CHILLER SYSTEM 3D</title>
+
+<style>
+body{
+margin:0;
+overflow:hidden;
+background:#111;
+}
+</style>
+
+</head>
+
+<body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xeeeeee);
+
+const camera = new THREE.PerspectiveCamera(
+60,
+window.innerWidth/window.innerHeight,
+0.1,
+1000
+);
+
+camera.position.set(10,8,12);
+
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const controls = new THREE.OrbitControls(camera,renderer.domElement);
+
+
+// LIGHT
+const ambient = new THREE.AmbientLight(0xffffff,0.8);
+scene.add(ambient);
+
+const light = new THREE.DirectionalLight(0xffffff,1);
+light.position.set(10,20,10);
+scene.add(light);
+
+
+// GROUND
+const ground = new THREE.Mesh(
+new THREE.PlaneGeometry(30,30),
+new THREE.MeshStandardMaterial({color:0xcccccc})
+);
+
+ground.rotation.x = -Math.PI/2;
+scene.add(ground);
+
+
 // ----------------------
+// CT (Cooling Tower)
+// ----------------------
+
+const CT = new THREE.Mesh(
+new THREE.BoxGeometry(3,2,3),
+new THREE.MeshStandardMaterial({color:0x00aaff})
+);
+
+CT.position.set(0,1,10);   // ขยับขึ้นไปไกลขึ้น
+scene.add(CT);
+
+
+// ----------------------
+// CDP (Pump)
+// ----------------------
+
+const CDP = new THREE.Mesh(
+new THREE.CylinderGeometry(0.7,0.7,2,32),
+new THREE.MeshStandardMaterial({color:0x111111})
+);
+
+CDP.position.set(1,1,6);  // เว้นระยะ
+scene.add(CDP);
+
+
+// ----------------------
+// CH (Chiller)
+// ----------------------
+
+const CH = new THREE.Mesh(
+new THREE.BoxGeometry(4,2,2),
+new THREE.MeshStandardMaterial({color:0xffcc00})
+);
+
+CH.position.set(0,1,0);   // กลาง
+scene.add(CH);
+
+
+// ----------------------
+// CHP (Pump)
+// ----------------------
+
+const CHP = new THREE.Mesh(
+new THREE.CylinderGeometry(0.7,0.7,2,32),
+new THREE.MeshStandardMaterial({color:0x111111})
+);
+
+CHP.position.set(1,1,-6);  // เว้นระยะ
+scene.add(CHP);
+
+
+// ----------------------
+// AHU
+// ----------------------
+
+const AHU = new THREE.Mesh(
+new THREE.BoxGeometry(3,1.5,2),
+new THREE.MeshStandardMaterial({color:0xff3333})
+);
+
+AHU.position.set(0,1,-10); // ไกลสุด
+scene.add(AHU);
+
+  // ----------------------
 // PIPE FUNCTION
 // ----------------------
 
@@ -54,3 +179,21 @@ pipeVertical(-1,-8,2,1,0xff0000);   // AHU ลง
 pipeVertical(1,-10,1,2,0x00ffff);   // AHU ขึ้น
 pipeVertical(1,-1,1,2,0x00ffff);    // CH ขึ้น
 pipeVertical(1,8,1,2,0x00ffff);     // CT ขึ้น
+
+// ANIMATE
+function animate(){
+
+requestAnimationFrame(animate);
+
+controls.update();
+
+renderer.render(scene,camera);
+
+}
+
+animate();
+
+</script>
+
+</body>
+</html>
