@@ -16,6 +16,11 @@ body { margin:0; overflow:hidden; background:#1e2228; }
 
 // ===== Scene =====
 const scene = new THREE.Scene();
+let CHP = false;
+let CDP = false;
+let coolingFan = false;
+let chiller = false;
+let AHU = false;
 scene.background = new THREE.Color(0x1e2228);
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
@@ -330,14 +335,43 @@ createChiller(0,0);
 createPump(-500,280);
 createPump(500,280);
 
+  // ===== AUTO SYSTEM =====
+let startTime = null;
+function startAuto(){
+startTime = Date.now();
+}
+function updateSystem(){
+if(!startTime) return;
+let t = (Date.now() - startTime)/1000;
+// 3 วิ ปั้มทำงาน
+if(t > 3){
+console.log("CHP , CDP Pump ON");
+}
+// 8 วิ พัดลม Cooling Tower
+if(t > 8){
+console.log("Cooling Fan ON");
+}
+// 13 วิ Chiller
+if(t > 13){
+console.log("Chiller ON");
+}
+// 16 วิ AHU
+if(t > 16){
+console.log("AHU ON");
+}
+
+}
   
 // ===== Animate =====
 function animate(){
 requestAnimationFrame(animate);
 controls.update();
+updateSystem();
 renderer.render(scene,camera);
 }
+
 animate();
+startAuto();
 
 </script>
 </body>
