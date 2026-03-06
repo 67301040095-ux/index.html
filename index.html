@@ -194,14 +194,76 @@ scene.add(CDP);
 // CH
 // ----------------------
 
-const CH = new THREE.Mesh(
+// ----------------------
+// CH (Chiller)
+// ----------------------
+
+const CH = new THREE.Group();
+
+
+// ตัวเครื่องหลัก
+const body = new THREE.Mesh(
 new THREE.BoxGeometry(4,2,2),
-new THREE.MeshStandardMaterial({color:0xffcc00})
+new THREE.MeshStandardMaterial({color:0xdddddd})
 );
 
-CH.position.set(0,1,0);
-scene.add(CH);
+body.position.y = 1;
+CH.add(body);
 
+
+// ฐานเครื่อง
+const base = new THREE.Mesh(
+new THREE.BoxGeometry(4.5,0.4,2.5),
+new THREE.MeshStandardMaterial({color:0x555555})
+);
+
+base.position.y = 0.2;
+CH.add(base);
+
+
+// แผงระบายความร้อน
+const grill = new THREE.Mesh(
+new THREE.BoxGeometry(4.1,1.2,0.1),
+new THREE.MeshStandardMaterial({color:0x888888})
+);
+
+grill.position.set(0,1,1.05);
+CH.add(grill);
+
+
+// พัดลมบนเครื่อง
+const fanTop = new THREE.Group();
+fanTop.position.y = 2.2;
+
+const fanBase = new THREE.Mesh(
+new THREE.CylinderGeometry(0.6,0.6,0.2,32),
+new THREE.MeshStandardMaterial({color:0x444444})
+);
+
+fanTop.add(fanBase);
+
+
+// ใบพัด
+for(let i=0;i<4;i++){
+
+const blade = new THREE.Mesh(
+new THREE.BoxGeometry(1.2,0.1,0.2),
+new THREE.MeshStandardMaterial({color:0x222222})
+);
+
+blade.rotation.y = i*(Math.PI/2);
+
+fanTop.add(blade);
+
+}
+
+CH.add(fanTop);
+
+
+// ตำแหน่งเครื่อง
+CH.position.set(0,0,0);
+
+scene.add(CH);
 
 // ----------------------
 // CHP
