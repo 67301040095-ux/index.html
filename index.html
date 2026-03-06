@@ -4,11 +4,13 @@
 <title>Chiller SCADA</title>
 
 <style>
+
 body{
 margin:0;
 background:#111;
 color:white;
 font-family:Arial;
+overflow:hidden;
 }
 
 #ui{
@@ -16,6 +18,9 @@ position:absolute;
 top:20px;
 left:20px;
 z-index:10;
+background:rgba(0,0,0,0.6);
+padding:15px;
+border-radius:10px;
 }
 
 button{
@@ -27,6 +32,7 @@ margin-right:10px;
 #temp{
 width:200px;
 }
+
 </style>
 
 </head>
@@ -43,6 +49,7 @@ width:200px;
 Temp :
 <input type="range" id="temp" min="35" max="60" value="44"
 oninput="updateTemp(this.value)">
+
 <span id="tempValue">44°F</span>
 
 <br><br>
@@ -51,7 +58,10 @@ oninput="updateTemp(this.value)">
 
 </div>
 
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
 
 <script>
 
@@ -65,17 +75,18 @@ window.innerWidth/window.innerHeight,
 );
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
-
 renderer.setSize(window.innerWidth,window.innerHeight);
-
 document.body.appendChild(renderer.domElement);
 
-camera.position.set(0,6,12);
-camera.lookAt(0,0,0);
+camera.position.set(8,8,12);
+
+const controls = new THREE.OrbitControls(camera,renderer.domElement);
+controls.enableDamping = true;
+
 
 
 const light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(5,10,5);
+light.position.set(10,10,5);
 scene.add(light);
 
 scene.add(new THREE.AmbientLight(0x404040));
@@ -83,7 +94,7 @@ scene.add(new THREE.AmbientLight(0x404040));
 
 
 const floor = new THREE.Mesh(
-new THREE.PlaneGeometry(30,30),
+new THREE.PlaneGeometry(40,40),
 new THREE.MeshStandardMaterial({color:0xeeeeee})
 );
 
@@ -93,36 +104,16 @@ scene.add(floor);
 
 
 
-function createBox(color,x,z){
+function box(color,x,z){
+
+const m = new THREE.MeshStandardMaterial({color:color});
 
 const mesh = new THREE.Mesh(
-
-new THREE.BoxGeometry(1.5,1.5,1.5),
-
-new THREE.MeshStandardMaterial({color:color})
-
+new THREE.BoxGeometry(2,2,2),
+m
 );
 
-mesh.position.set(x,0.75,z);
-
-scene.add(mesh);
-
-return mesh;
-
-}
-
-
-function createCylinder(color,x,z){
-
-const mesh = new THREE.Mesh(
-
-new THREE.CylinderGeometry(0.6,0.6,1.5,32),
-
-new THREE.MeshStandardMaterial({color:color})
-
-);
-
-mesh.position.set(x,0.75,z);
+mesh.position.set(x,1,z);
 
 scene.add(mesh);
 
@@ -132,15 +123,65 @@ return mesh;
 
 
 
-const AHU = createBox(0xffffff,0,5);
+function pump(color,x,z){
 
-const CHP = createCylinder(0x2196f3,0,2.5);
+const m = new THREE.MeshStandardMaterial({color:color});
 
-const CH = createBox(0x2e7d32,0,0);
+const mesh = new THREE.Mesh(
+new THREE.CylinderGeometry(0.8,0.8,2,32),
+m
+);
 
-const CDP = createCylinder(0x2196f3,0,-2.5);
+mesh.position.set(x,1,z);
 
-const CT = createBox(0xffffff,0,-5);
+scene.add(mesh);
+
+return mesh;
+
+}
+
+
+
+function pipe(x1,z1,x2,z2){
+
+const geometry = new THREE.BufferGeometry().setFromPoints([
+new THREE.Vector3(x1,1,z1),
+new THREE.Vector3(x2,1,z2)
+]);
+
+const material = new THREE.LineDashedMaterial({
+color:0x00ffff,
+dashSize:0.5,
+gapSize:0.3
+});
+
+const line = new THREE.Line(geometry,material);
+line.computeLineDistances();
+
+scene.add(line);
+
+return line;
+
+}
+
+
+
+const AHU = box(0xffffff,0,6);
+
+const CHP = pump(0x2196f3,0,3);
+
+const CH = box(0x2e7d32,0,0);
+
+const CDP = pump(0x2196f3,0,-3);
+
+const CT = box(0xffffff,0,-6);
+
+
+
+const pipe1 = pipe(0,6,0,3);
+const pipe2 = pipe(0,3,0,0);
+const pipe3 = pipe(0,0,0,-3);
+const pipe4 = pipe(0,-3,0,-6);
 
 
 
@@ -152,16 +193,25 @@ function startSystem(){
 
 running = true;
 
-document.getElementById("status").innerHTML = "SYSTEM RUNNING";
+document.getElementById("status").innerHTML="SYSTEM RUNNING";
+
+AHU.material.color.set(0x00ff00);
+CH.material.color.set(0x00ff00);
+CT.material.color.set(0x00ff00);
 
 }
+
 
 
 function stopSystem(){
 
 running = false;
 
-document.getElementById("status").innerHTML = "SYSTEM STOP";
+document.getElementById("status").innerHTML="SYSTEM STOP";
+
+AHU.material.color.set(0xffffff);
+CH.material.color.set(0x2e7d32);
+CT.material.color.set(0xffffff);
 
 }
 
@@ -169,17 +219,23 @@ document.getElementById("status").innerHTML = "SYSTEM STOP";
 
 function updateTemp(v){
 
-document.getElementById("tempValue").innerHTML = v+"°F";
+document.getElementById("tempValue").innerHTML=v+"°F";
 
-if(v < 44){
+if(v<44){
 
-document.getElementById("status").innerHTML = "CHILLER DOWN";
+running=false;
 
-running = false;
+document.getElementById("status").innerHTML="CHILLER DOWN";
+
+CH.material.color.set(0xff0000);
 
 }
 
 }
+
+
+
+let flow = 0;
 
 
 
@@ -187,17 +243,19 @@ function animate(){
 
 requestAnimationFrame(animate);
 
+controls.update();
+
 if(running){
 
-CH.rotation.y += 0.02;
+flow+=0.1;
 
-CHP.rotation.y += 0.1;
+pipe1.material.dashOffset = -flow;
+pipe2.material.dashOffset = -flow;
+pipe3.material.dashOffset = -flow;
+pipe4.material.dashOffset = -flow;
 
-CDP.rotation.y += 0.1;
-
-CT.rotation.y += 0.01;
-
-AHU.rotation.y += 0.01;
+CHP.rotation.y +=0.2;
+CDP.rotation.y +=0.2;
 
 }
 
@@ -206,6 +264,17 @@ renderer.render(scene,camera);
 }
 
 animate();
+
+
+
+window.addEventListener("resize",()=>{
+
+camera.aspect=window.innerWidth/window.innerHeight;
+camera.updateProjectionMatrix();
+
+renderer.setSize(window.innerWidth,window.innerHeight);
+
+});
 
 </script>
 
