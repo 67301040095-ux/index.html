@@ -1,170 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>CHILLER SYSTEM 3D</title>
+// ----------------------
+// PIPE FUNCTION
+// ----------------------
 
-<style>
-body{
-margin:0;
-overflow:hidden;
-background:#111;
-}
-</style>
+function pipeVertical(x,z,y1,y2,color){
 
-</head>
+const length = Math.abs(y2-y1);
 
-<body>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
-
-<script>
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xeeeeee);
-
-const camera = new THREE.PerspectiveCamera(
-60,
-window.innerWidth/window.innerHeight,
-0.1,
-1000
+const pipe = new THREE.Mesh(
+new THREE.CylinderGeometry(0.15,0.15,length,16),
+new THREE.MeshStandardMaterial({color:color})
 );
 
-camera.position.set(10,8,12);
+pipe.position.set(x,(y1+y2)/2,z);
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth,window.innerHeight);
-document.body.appendChild(renderer.domElement);
-
-const controls = new THREE.OrbitControls(camera,renderer.domElement);
-
-
-// LIGHT
-const ambient = new THREE.AmbientLight(0xffffff,0.8);
-scene.add(ambient);
-
-const light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(10,20,10);
-scene.add(light);
-
-
-// GROUND
-const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(30,30),
-new THREE.MeshStandardMaterial({color:0xcccccc})
-);
-
-ground.rotation.x = -Math.PI/2;
-scene.add(ground);
-
-
-// ----------------------
-// CT (Cooling Tower)
-// ----------------------
-
-const CT = new THREE.Mesh(
-new THREE.BoxGeometry(3,2,3),
-new THREE.MeshStandardMaterial({color:0x00aaff})
-);
-
-CT.position.set(0,1,10);   // ขยับขึ้นไปไกลขึ้น
-scene.add(CT);
-
-
-// ----------------------
-// CDP (Pump)
-// ----------------------
-
-const CDP = new THREE.Mesh(
-new THREE.CylinderGeometry(0.7,0.7,2,32),
-new THREE.MeshStandardMaterial({color:0x111111})
-);
-
-CDP.position.set(1.5,1,6);  // เว้นระยะ
-scene.add(CDP);
-
-
-// ----------------------
-// CH (Chiller)
-// ----------------------
-
-const CH = new THREE.Mesh(
-new THREE.BoxGeometry(4,2,2),
-new THREE.MeshStandardMaterial({color:0xffcc00})
-);
-
-CH.position.set(0,1,0);   // กลาง
-scene.add(CH);
-
-
-// ----------------------
-// CHP (Pump)
-// ----------------------
-
-const CHP = new THREE.Mesh(
-new THREE.CylinderGeometry(0.7,0.7,2,32),
-new THREE.MeshStandardMaterial({color:0x111111})
-);
-
-CHP.position.set(1.5,1,-6);  // เว้นระยะ
-scene.add(CHP);
-
-
-// ----------------------
-// AHU
-// ----------------------
-
-const AHU = new THREE.Mesh(
-new THREE.BoxGeometry(3,1.5,2),
-new THREE.MeshStandardMaterial({color:0xff3333})
-);
-
-AHU.position.set(0,1,-10); // ไกลสุด
-scene.add(AHU);
-// PIPE MATERIAL
-const pipeHot = new THREE.MeshStandardMaterial({color:0xff0000});
-const pipeCold = new THREE.MeshStandardMaterial({color:0x00ffff});
-
-function pipe(x,z,length,color){
-
-const p = new THREE.Mesh(
-new THREE.CylinderGeometry(0.2,0.2,length,16),
-color
-);
-
-p.position.set(x,length/2,z);
-scene.add(p);
+scene.add(pipe);
 
 }
 
-// ------------------
-// HOT PIPE (แดง)
-// ------------------
+function pipeHorizontal(x1,x2,y,z,color){
 
-pipe(-1,0,20,pipeHot);
+const length = Math.abs(x2-x1);
 
+const pipe = new THREE.Mesh(
+new THREE.CylinderGeometry(0.15,0.15,length,16),
+new THREE.MeshStandardMaterial({color:color})
+);
 
-// ------------------
-// COLD PIPE (ฟ้า)
-// ------------------
+pipe.rotation.z = Math.PI/2;
 
-pipe(1,0,20,pipeCold);
+pipe.position.set((x1+x2)/2,y,z);
 
-// ANIMATE
-function animate(){
-
-requestAnimationFrame(animate);
-
-controls.update();
-
-renderer.render(scene,camera);
+scene.add(pipe);
 
 }
 
-animate();
 
-</script>
+// ----------------------
+// HOT WATER PIPE (แดง)
+// CT → CH → AHU
+// ----------------------
 
-</body>
-</html>
+pipeVertical(-1,10,2,1,0xff0000);   // CT ลง
+pipeVertical(-1,1,2,1,0xff0000);    // CH ลง
+pipeVertical(-1,-8,2,1,0xff0000);   // AHU ลง
+
+
+
+// ----------------------
+// COLD WATER PIPE (ฟ้า)
+// AHU → CH → CT
+// ----------------------
+
+pipeVertical(1,-10,1,2,0x00ffff);   // AHU ขึ้น
+pipeVertical(1,-1,1,2,0x00ffff);    // CH ขึ้น
+pipeVertical(1,8,1,2,0x00ffff);     // CT ขึ้น
