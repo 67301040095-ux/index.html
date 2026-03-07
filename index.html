@@ -216,10 +216,12 @@ scene.add(CT)
 // CDP
 // ----------------------
 
-const CDP = new THREE.Mesh(
+const pumpMaterial = new THREE.MeshStandardMaterial({color:0x000000});
+
+const pump1 = new THREE.Mesh(
 new THREE.CylinderGeometry(0.7,0.7,2,32),
-new THREE.MeshStandardMaterial({color:0x111111})
-)
+pumpMaterial
+);
 
 CDP.position.set(1,1,6)
 
@@ -312,10 +314,12 @@ scene.add(CH)
 // CHP
 // ----------------------
 
-const CHP = new THREE.Mesh(
+const pumpMaterial = new THREE.MeshStandardMaterial({color:0x000000});
+
+const pump1 = new THREE.Mesh(
 new THREE.CylinderGeometry(0.7,0.7,2,32),
-new THREE.MeshStandardMaterial({color:0x111111})
-)
+pumpMaterial
+);
 
 CHP.position.set(1,1,-6)
 
