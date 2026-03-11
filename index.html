@@ -227,18 +227,18 @@ for(let i=0;i<water.length;i++){
 
 if(i<5){
 
-water[i].position.x-=0.05
+water[i].position.z+=0.05
 
-if(water[i].position.x<-10){
-water[i].position.x=10
+if(water[i].position.z<-10){
+water[i].position.z=10
 }
 
 }else{
 
-water[i].position.x+=0.05
+water[i].position.z-=0.05
 
-if(water[i].position.x>10){
-water[i].position.x=-10
+if(water[i].position.z>10){
+water[i].position.z=-10
 }
   
 }
