@@ -121,15 +121,54 @@ pump2.position.set(1,1,-6)
 scene.add(pump2)
 
 
-// chiller
-const chiller=new THREE.Mesh(
-new THREE.BoxGeometry(4,2,2),
-new THREE.MeshStandardMaterial({color:0xffffff})
+ //BASE
+const base = new THREE.Mesh(
+ new THREE.BoxGeometry(8,0.5,4),
+ new THREE.MeshStandardMaterial({color:0x777777})
+)
+base.position.set(0,0.25,0)
+scene.add(base)
+
+
+// CHILLER BODY
+const chillerBody = new THREE.Mesh(
+ new THREE.CylinderGeometry(1.2,1.2,6,32),
+ new THREE.MeshStandardMaterial({color:0x1f7a6b})
 )
 
-chiller.position.set(0,1,0)
-scene.add(chiller)
+chillerBody.rotation.z = Math.PI/2
+chillerBody.position.set(0,1.5,0)
+scene.add(chillerBody)
 
+
+// TOP PIPE
+const topPipe = new THREE.Mesh(
+ new THREE.CylinderGeometry(0.8,0.8,2,32),
+ new THREE.MeshStandardMaterial({color:0x1f7a6b})
+)
+
+topPipe.position.set(0,3,0)
+scene.add(topPipe)
+
+
+// CONTROL BOX
+const controlBox = new THREE.Mesh(
+ new THREE.BoxGeometry(1,2,1),
+ new THREE.MeshStandardMaterial({color:0x222222})
+)
+
+controlBox.position.set(3,1,0)
+scene.add(controlBox)
+
+
+// SCREEN
+const screen = new THREE.Mesh(
+ new THREE.BoxGeometry(0.6,0.4,0.1),
+ new THREE.MeshStandardMaterial({color:0x00ffff})
+)
+
+screen.position.set(3,1.5,0.55)
+scene.add(screen)
 
 // AHU
 const ahu=new THREE.Mesh(
