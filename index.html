@@ -5,7 +5,6 @@
 <title>CHILLER SYSTEM 3D</title>
 
 <style>
-
 body{
 margin:0;
 overflow:hidden;
@@ -25,39 +24,26 @@ font-size:16px;
 margin-right:10px;
 cursor:pointer;
 }
-
 </style>
 </head>
 
 <body>
 
-
 <div id="ui">
-
 <button onclick="startSystem()">START</button>
-
 <button onclick="stopSystem()">STOP</button>
-
 </div>
 
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
-
 
 <script>
 
-
 let systemRun = false
-
-
 
 // SCENE
 const scene = new THREE.Scene()
 scene.background = new THREE.Color(0xeeeeee)
-
-
 
 // CAMERA
 const camera = new THREE.PerspectiveCamera(
@@ -69,19 +55,13 @@ window.innerWidth/window.innerHeight,
 
 camera.position.set(10,8,12)
 
-
-
 // RENDERER
 const renderer = new THREE.WebGLRenderer({antialias:true})
 renderer.setSize(window.innerWidth,window.innerHeight)
 document.body.appendChild(renderer.domElement)
 
-
-
 // CONTROL
 const controls = new THREE.OrbitControls(camera,renderer.domElement)
-
-
 
 // LIGHT
 const ambient = new THREE.AmbientLight(0xffffff,0.8)
@@ -90,8 +70,6 @@ scene.add(ambient)
 const light = new THREE.DirectionalLight(0xffffff,1)
 light.position.set(10,20,10)
 scene.add(light)
-
-
 
 // GROUND
 const ground = new THREE.Mesh(
@@ -103,16 +81,12 @@ ground.rotation.x = -Math.PI/2
 scene.add(ground)
 
 
-
 // ----------------------
-// CT (Cooling Tower)
+// Cooling Tower
 // ----------------------
 
 const CT = new THREE.Group()
 
-
-
-// ฐาน
 const CTbase = new THREE.Mesh(
 new THREE.BoxGeometry(3,0.6,3),
 new THREE.MeshStandardMaterial({color:0x777777})
@@ -121,9 +95,6 @@ new THREE.MeshStandardMaterial({color:0x777777})
 CTbase.position.y = 0.3
 CT.add(CTbase)
 
-
-
-// ส่วนล่าง
 const lower = new THREE.Mesh(
 new THREE.BoxGeometry(2.5,2.5,2.5),
 new THREE.MeshStandardMaterial({color:0x999999})
@@ -132,25 +103,6 @@ new THREE.MeshStandardMaterial({color:0x999999})
 lower.position.y = 1.8
 CT.add(lower)
 
-
-
-// Louver
-for(let i=0;i<5;i++){
-
-const louver = new THREE.Mesh(
-new THREE.BoxGeometry(2.6,0.1,0.2),
-new THREE.MeshStandardMaterial({color:0xdddddd})
-)
-
-louver.position.set(0,1+(i*0.3),1.3)
-
-CT.add(louver)
-
-}
-
-
-
-// ส่วนบน
 const upper = new THREE.Mesh(
 new THREE.BoxGeometry(3,2.5,3),
 new THREE.MeshStandardMaterial({color:0xaaaaaa})
@@ -159,25 +111,8 @@ new THREE.MeshStandardMaterial({color:0xaaaaaa})
 upper.position.y = 4.3
 CT.add(upper)
 
-
-
-// ฝาบน
-const topCap = new THREE.Mesh(
-new THREE.CylinderGeometry(1.6,1.6,0.4,32),
-new THREE.MeshStandardMaterial({color:0x444444})
-)
-
-topCap.position.y = 5.8
-CT.add(topCap)
-
-
-
-// FAN
 const fan = new THREE.Group()
-
 fan.position.y = 6
-
-
 
 const hub = new THREE.Mesh(
 new THREE.CylinderGeometry(0.15,0.15,0.4,16),
@@ -186,8 +121,6 @@ new THREE.MeshStandardMaterial({color:0x222222})
 
 hub.rotation.z = Math.PI/2
 fan.add(hub)
-
-
 
 for(let i=0;i<4;i++){
 
@@ -204,79 +137,56 @@ fan.add(blade)
 
 CT.add(fan)
 
-
-
 CT.position.set(0,0,10)
 
 scene.add(CT)
 
 
+// ----------------------
+// Pump Material (ประกาศครั้งเดียว)
+// ----------------------
+
+const pumpMaterial = new THREE.MeshStandardMaterial({color:0x000000})
+
 
 // ----------------------
-// CDP
+// CDP Pump
 // ----------------------
 
-const pumpMaterial = new THREE.MeshStandardMaterial({color:0x000000});
+const CDP = new THREE.Group()
 
-const pump1 = new THREE.Mesh(
+const pumpCDP = new THREE.Mesh(
 new THREE.CylinderGeometry(0.7,0.7,2,32),
 pumpMaterial
-);
+)
+
+pumpCDP.rotation.z = Math.PI/2
+
+CDP.add(pumpCDP)
 
 CDP.position.set(1,1,6)
 
 scene.add(CDP)
 
 
-
 // ----------------------
-// CH (Chiller)
+// Chiller
 // ----------------------
 
 const CH = new THREE.Group()
 
-
-
-// ตัวเครื่อง
 const body = new THREE.Mesh(
 new THREE.BoxGeometry(4,2,2),
 new THREE.MeshStandardMaterial({color:0xdddddd})
 )
 
 body.position.y = 1
+
 CH.add(body)
 
-
-
-// ฐานเครื่อง
-const CHbase = new THREE.Mesh(
-new THREE.BoxGeometry(4.5,0.4,2.5),
-new THREE.MeshStandardMaterial({color:0x555555})
-)
-
-CHbase.position.y = 0.2
-CH.add(CHbase)
-
-
-
-// แผงระบาย
-const grill = new THREE.Mesh(
-new THREE.BoxGeometry(4.1,1.2,0.1),
-new THREE.MeshStandardMaterial({color:0x888888})
-)
-
-grill.position.set(0,1,1.05)
-
-CH.add(grill)
-
-
-
-// พัดลมบน
 const fanTop = new THREE.Group()
 
 fanTop.position.y = 2.2
-
-
 
 const fanBase = new THREE.Mesh(
 new THREE.CylinderGeometry(0.6,0.6,0.2,32),
@@ -284,8 +194,6 @@ new THREE.MeshStandardMaterial({color:0x444444})
 )
 
 fanTop.add(fanBase)
-
-
 
 for(let i=0;i<4;i++){
 
@@ -302,29 +210,29 @@ fanTop.add(blade)
 
 CH.add(fanTop)
 
-
-
 CH.position.set(0,0,0)
 
 scene.add(CH)
 
 
-
 // ----------------------
-// CHP
+// CHP Pump
 // ----------------------
 
-const pumpMaterial = new THREE.MeshStandardMaterial({color:0x000000});
+const CHP = new THREE.Group()
 
-const pump1 = new THREE.Mesh(
+const pumpCHP = new THREE.Mesh(
 new THREE.CylinderGeometry(0.7,0.7,2,32),
 pumpMaterial
-);
+)
+
+pumpCHP.rotation.z = Math.PI/2
+
+CHP.add(pumpCHP)
 
 CHP.position.set(1,1,-6)
 
 scene.add(CHP)
-
 
 
 // ----------------------
@@ -339,7 +247,6 @@ new THREE.MeshStandardMaterial({color:0xff3333})
 AHU.position.set(0,1,-10)
 
 scene.add(AHU)
-
 
 
 // ----------------------
@@ -363,14 +270,11 @@ scene.add(pipe)
 
 }
 
-
-
 // SUPPLY
 pipe(-1,10,6,0xff0000)
 pipe(-1,6,0,0xff0000)
 pipe(-1,0,-6,0xff0000)
 pipe(-1,-6,-10,0xff0000)
-
 
 // RETURN
 pipe(1,-10,-6,0x00ffff)
@@ -379,21 +283,15 @@ pipe(1,0,6,0x00ffff)
 pipe(1,6,10,0x00ffff)
 
 
-
 // SYSTEM CONTROL
 
 function startSystem(){
-
 systemRun = true
-
 }
 
 function stopSystem(){
-
 systemRun = false
-
 }
-
 
 
 // ANIMATION
@@ -407,6 +305,10 @@ controls.update()
 if(systemRun){
 
 fan.rotation.y += 0.3
+fanTop.rotation.y += 0.2
+
+pumpCDP.rotation.x += 0.2
+pumpCHP.rotation.x += 0.2
 
 }
 
@@ -416,8 +318,7 @@ renderer.render(scene,camera)
 
 animate()
 
-
-
 </script>
+
 </body>
 </html>
