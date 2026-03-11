@@ -20,10 +20,11 @@ button{
 padding:10px 20px;
 font-size:16px;
 margin-right:10px;
+cursor:pointer;
 }
 </style>
-</head>
 
+</head>
 <body>
 
 <div id="ui">
@@ -36,24 +37,15 @@ margin-right:10px;
 
 <script>
 
-//================
-// SYSTEM STATE
-//================
-let systemRun = false
-let water = []
+let systemRun=false
+let water=[]
 
+// scene
+const scene=new THREE.Scene()
+scene.background=new THREE.Color(0xffffff)
 
-//================
-// SCENE
-//================
-const scene = new THREE.Scene()
-scene.background = new THREE.Color(0xffffff)
-
-
-//================
-// CAMERA
-//================
-const camera = new THREE.PerspectiveCamera(
+// camera
+const camera=new THREE.PerspectiveCamera(
 60,
 window.innerWidth/window.innerHeight,
 0.1,
@@ -62,93 +54,56 @@ window.innerWidth/window.innerHeight,
 
 camera.position.set(10,6,14)
 
-
-//================
-// RENDERER
-//================
-const renderer = new THREE.WebGLRenderer({antialias:true})
+// renderer
+const renderer=new THREE.WebGLRenderer({antialias:true})
 renderer.setSize(window.innerWidth,window.innerHeight)
 document.body.appendChild(renderer.domElement)
 
+// control
+const controls=new THREE.OrbitControls(camera,renderer.domElement)
 
-//================
-// CONTROL
-//================
-const controls = new THREE.OrbitControls(camera,renderer.domElement)
-
-
-//================
-// LIGHT
-//================
-const light = new THREE.DirectionalLight(0xffffff,1)
+// light
+const light=new THREE.DirectionalLight(0xffffff,1)
 light.position.set(10,20,10)
 scene.add(light)
 
-const ambient = new THREE.AmbientLight(0xffffff,0.7)
-scene.add(ambient)
+scene.add(new THREE.AmbientLight(0xffffff,0.7))
 
-
-//================
-// GROUND
-//================
-const ground = new THREE.Mesh(
+// ground
+const ground=new THREE.Mesh(
 new THREE.PlaneGeometry(40,40),
 new THREE.MeshStandardMaterial({color:0xeeeeee})
 )
 
-ground.rotation.x = -Math.PI/2
+ground.rotation.x=-Math.PI/2
 scene.add(ground)
 
 
-
-//================
 // COOLING TOWER
-//================
-
-const CTbase = new THREE.Mesh(
-new THREE.BoxGeometry(3,1,3),
-new THREE.MeshStandardMaterial({color:0xbfbfbf})
+const CT=new THREE.Mesh(
+new THREE.BoxGeometry(3,5,3),
+new THREE.MeshStandardMaterial({color:0xdddddd})
 )
 
-CTbase.position.set(0,0.5,10)
-scene.add(CTbase)
+CT.position.set(0,2.5,10)
+scene.add(CT)
 
 
-const CTbody = new THREE.Mesh(
-new THREE.BoxGeometry(2.2,4,2.2),
-new THREE.MeshStandardMaterial({color:0xe6e6e6})
-)
-
-CTbody.position.set(0,3,10)
-scene.add(CTbody)
-
-
-const CTtop = new THREE.Mesh(
-new THREE.BoxGeometry(2.5,0.4,2.5),
-new THREE.MeshStandardMaterial({color:0xd0d0d0})
-)
-
-CTtop.position.set(0,5.2,10)
-scene.add(CTtop)
-
-
-const fanBlade = new THREE.Mesh(
-new THREE.BoxGeometry(2.2,0.1,0.3),
+// fan
+const fan=new THREE.Mesh(
+new THREE.CylinderGeometry(1.3,1.3,0.3,32),
 new THREE.MeshStandardMaterial({color:0x222222})
 )
 
-fanBlade.position.set(0,5.6,10)
-scene.add(fanBlade)
+fan.rotation.x=Math.PI/2
+fan.position.set(0,5.6,10)
+scene.add(fan)
 
 
+// pump
+const pumpMaterial=new THREE.MeshStandardMaterial({color:0x222222})
 
-//================
-// PUMPS
-//================
-
-const pumpMaterial = new THREE.MeshStandardMaterial({color:0x222222})
-
-const pump1 = new THREE.Mesh(
+const pump1=new THREE.Mesh(
 new THREE.CylinderGeometry(0.7,0.7,2,32),
 pumpMaterial
 )
@@ -156,8 +111,7 @@ pumpMaterial
 pump1.position.set(1,1,6)
 scene.add(pump1)
 
-
-const pump2 = new THREE.Mesh(
+const pump2=new THREE.Mesh(
 new THREE.CylinderGeometry(0.7,0.7,2,32),
 pumpMaterial
 )
@@ -166,53 +120,40 @@ pump2.position.set(1,1,-6)
 scene.add(pump2)
 
 
-
-//================
-// CHILLER
-//================
-
-const CH = new THREE.Mesh(
+// chiller
+const chiller=new THREE.Mesh(
 new THREE.BoxGeometry(4,2,2),
-new THREE.MeshStandardMaterial({color:0xdddddd})
+new THREE.MeshStandardMaterial({color:0xffffff})
 )
 
-CH.position.set(0,1,0)
-scene.add(CH)
+chiller.position.set(0,1,0)
+scene.add(chiller)
 
 
-
-//================
 // AHU
-//================
-
-const AHU = new THREE.Mesh(
+const ahu=new THREE.Mesh(
 new THREE.BoxGeometry(3,1.5,2),
 new THREE.MeshStandardMaterial({color:0xff4444})
 )
 
-AHU.position.set(0,1,-10)
-scene.add(AHU)
+ahu.position.set(0,1,-10)
+scene.add(ahu)
 
 
-
-//================
 // PIPE
-//================
-
 function pipe(x,z1,z2,color){
 
-const length = Math.abs(z2-z1)
+const len=Math.abs(z2-z1)
 
-const pipe = new THREE.Mesh(
-new THREE.CylinderGeometry(0.2,0.2,length,16),
+const p=new THREE.Mesh(
+new THREE.CylinderGeometry(0.2,0.2,len,16),
 new THREE.MeshStandardMaterial({color:color})
 )
 
-pipe.rotation.x = Math.PI/2
-pipe.position.set(x,1,(z1+z2)/2)
+p.rotation.x=Math.PI/2
+p.position.set(x,1,(z1+z2)/2)
 
-scene.add(pipe)
-
+scene.add(p)
 }
 
 pipe(-1,10,6,0xff0000)
@@ -226,23 +167,19 @@ pipe(1,0,6,0x00ffff)
 pipe(1,6,10,0x00ffff)
 
 
-
-//================
 // WATER
-//================
-
 function createWater(x,z){
 
-const drop = new THREE.Mesh(
-new THREE.SphereGeometry(0.15,16,16),
+const w=new THREE.Mesh(
+new THREE.SphereGeometry(0.3,16,16),
 new THREE.MeshStandardMaterial({color:0x00ffff})
 )
 
-drop.position.set(x,1,z)
+w.position.set(x,1,z)
 
-scene.add(drop)
+scene.add(w)
 
-water.push(drop)
+water.push(w)
 
 }
 
@@ -259,31 +196,23 @@ createWater(1,3)
 createWater(1,7)
 
 
-
-//================
-// BUTTON CONTROL
-//================
-
+// CONTROL
 function startSystem(){
 
-systemRun = true
+systemRun=true
 pumpMaterial.color.set(0x00ff00)
 
 }
 
 function stopSystem(){
 
-systemRun = false
+systemRun=false
 pumpMaterial.color.set(0x222222)
 
 }
 
 
-
-//================
-// ANIMATION
-//================
-
+// ANIMATE
 function animate(){
 
 requestAnimationFrame(animate)
@@ -292,22 +221,24 @@ controls.update()
 
 if(systemRun){
 
-fanBlade.rotation.y += 0.4
+fan.rotation.z+=0.4
 
 for(let i=0;i<water.length;i++){
 
-if(i < 5){
+if(i<5){
 
-water[i].position.z -= 0.05
-if(water[i].position.z < -10){
-water[i].position.z = 10
+water[i].position.z-=0.2
+
+if(water[i].position.z<-10){
+water[i].position.z=10
 }
 
 }else{
 
-water[i].position.z += 0.05
-if(water[i].position.z > 10){
-water[i].position.z = -10
+water[i].position.z+=0.2
+
+if(water[i].position.z>10){
+water[i].position.z=-10
 }
 
 }
@@ -321,21 +252,6 @@ renderer.render(scene,camera)
 }
 
 animate()
-
-
-
-//================
-// RESIZE
-//================
-
-window.addEventListener('resize',()=>{
-
-camera.aspect = window.innerWidth/window.innerHeight
-camera.updateProjectionMatrix()
-
-renderer.setSize(window.innerWidth,window.innerHeight)
-
-})
 
 </script>
 
