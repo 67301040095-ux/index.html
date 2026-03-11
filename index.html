@@ -123,7 +123,7 @@ scene.add(fanBlade)
 // CDP PUMP
 // ========================
 
-const pumpMaterial = new THREE.MeshStandardMaterial({color:0x00aa00})
+const pumpMaterial = new THREE.MeshStandardMaterial({color:0x222222})
 
 const pump1 = new THREE.Mesh(
 new THREE.CylinderGeometry(0.7,0.7,2,32),
@@ -250,10 +250,12 @@ createWater(1,7)
 
 function startSystem(){
 systemRun = true
+  pumpMaterial.color.set(0x00ff00)
 }
 
 function stopSystem(){
 systemRun = false
+  pumpMaterial.color.set(0x222222)
 }
 
 
