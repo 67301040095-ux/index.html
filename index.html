@@ -212,35 +212,12 @@ pumpMaterial.color.set(0x222222)
 }
 
 
-// ANIMATE
-function animate(){
-
-requestAnimationFrame(animate)
-
-controls.update()
-
-if(systemRun){
-
-fan.rotation.z+=0.4
-
 for(let i=0;i<water.length;i++){
 
 water[i].position.z += 0.05
 
 if(water[i].position.z > 10){
 water[i].position.z = -10
-
-}
 }
 
-
-renderer.render(scene,camera)
-
 }
-
-animate()
-
-</script>
-
-</body>
-</html>
