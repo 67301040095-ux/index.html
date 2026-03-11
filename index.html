@@ -182,15 +182,49 @@ statusLight.position.set(3,2.3,0)
 scene.add(statusLight)
 
 
-// AHU
-const ahu=new THREE.Mesh(
-new THREE.BoxGeometry(3,1.5,2),
-new THREE.MeshStandardMaterial({color:0xff4444})
+// AHU BODY
+const ahuBody = new THREE.Mesh(
+ new THREE.BoxGeometry(6,2,2.5),
+ new THREE.MeshStandardMaterial({color:0xffffff})
 )
 
-ahu.position.set(0,1,-10)
-scene.add(ahu)
+ahuBody.position.set(0,1,-10)
+scene.add(ahuBody)
 
+
+// PANEL LINES
+for(let i=-2;i<=2;i++){
+
+const line = new THREE.Mesh(
+ new THREE.BoxGeometry(0.05,2.1,2.55),
+ new THREE.MeshStandardMaterial({color:0x555555})
+)
+
+line.position.set(i,1,-10)
+scene.add(line)
+
+}
+
+
+// WINDOW
+const ahuWindow = new THREE.Mesh(
+ new THREE.BoxGeometry(0.6,0.6,0.05),
+ new THREE.MeshStandardMaterial({color:0x00bfff})
+)
+
+ahuWindow.position.set(-2.3,1,-8.75)
+scene.add(ahuWindow)
+
+
+// HANDLE
+const handle = new THREE.Mesh(
+ new THREE.CylinderGeometry(0.03,0.03,0.4,16),
+ new THREE.MeshStandardMaterial({color:0x222222})
+)
+
+handle.rotation.z = Math.PI/2
+handle.position.set(-1,1,-8.75)
+scene.add(handle)
 
 // PIPE
 function pipe(x,z1,z2,color){
