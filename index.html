@@ -25,6 +25,7 @@ margin-right:10px;
 cursor:pointer;
 }
 </style>
+
 </head>
 
 <body>
@@ -39,11 +40,11 @@ cursor:pointer;
 
 <script>
 
-let systemRun = false
+let systemRun = false;
 
 // SCENE
-const scene = new THREE.Scene()
-scene.background = new THREE.Color(0xeeeeee)
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xeeeeee);
 
 // CAMERA
 const camera = new THREE.PerspectiveCamera(
@@ -51,189 +52,94 @@ const camera = new THREE.PerspectiveCamera(
 window.innerWidth/window.innerHeight,
 0.1,
 1000
-)
-
-camera.position.set(10,8,12)
+);
+camera.position.set(10,8,12);
 
 // RENDERER
-const renderer = new THREE.WebGLRenderer({antialias:true})
-renderer.setSize(window.innerWidth,window.innerHeight)
-document.body.appendChild(renderer.domElement)
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
 // CONTROL
-const controls = new THREE.OrbitControls(camera,renderer.domElement)
+const controls = new THREE.OrbitControls(camera,renderer.domElement);
 
 // LIGHT
-const ambient = new THREE.AmbientLight(0xffffff,0.8)
-scene.add(ambient)
+const ambient = new THREE.AmbientLight(0xffffff,0.8);
+scene.add(ambient);
 
-const light = new THREE.DirectionalLight(0xffffff,1)
-light.position.set(10,20,10)
-scene.add(light)
+const light = new THREE.DirectionalLight(0xffffff,1);
+light.position.set(10,20,10);
+scene.add(light);
 
 // GROUND
 const ground = new THREE.Mesh(
 new THREE.PlaneGeometry(30,30),
 new THREE.MeshStandardMaterial({color:0xcccccc})
-)
-
-ground.rotation.x = -Math.PI/2
-scene.add(ground)
-
+);
+ground.rotation.x = -Math.PI/2;
+scene.add(ground);
 
 // ----------------------
-// Cooling Tower
+// COOLING TOWER
 // ----------------------
 
-const CT = new THREE.Group()
+const CT = new THREE.Group();
 
-const CTbase = new THREE.Mesh(
-new THREE.BoxGeometry(3,0.6,3),
-new THREE.MeshStandardMaterial({color:0x777777})
-)
-
-CTbase.position.y = 0.3
-CT.add(CTbase)
-
-const lower = new THREE.Mesh(
-new THREE.BoxGeometry(2.5,2.5,2.5),
+const CTbody = new THREE.Mesh(
+new THREE.BoxGeometry(3,5,3),
 new THREE.MeshStandardMaterial({color:0x999999})
-)
+);
+CTbody.position.y = 2.5;
+CT.add(CTbody);
 
-lower.position.y = 1.8
-CT.add(lower)
-
-const upper = new THREE.Mesh(
-new THREE.BoxGeometry(3,2.5,3),
-new THREE.MeshStandardMaterial({color:0xaaaaaa})
-)
-
-upper.position.y = 4.3
-CT.add(upper)
-
-const fan = new THREE.Group()
-fan.position.y = 6
-
-const hub = new THREE.Mesh(
-new THREE.CylinderGeometry(0.15,0.15,0.4,16),
-new THREE.MeshStandardMaterial({color:0x222222})
-)
-
-hub.rotation.z = Math.PI/2
-fan.add(hub)
-
-for(let i=0;i<4;i++){
-
-const blade = new THREE.Mesh(
-new THREE.BoxGeometry(1.6,0.15,0.1),
+const fan = new THREE.Mesh(
+new THREE.CylinderGeometry(1.2,1.2,0.3,32),
 new THREE.MeshStandardMaterial({color:0x333333})
-)
+);
+fan.position.y = 5.2;
+CT.add(fan);
 
-blade.rotation.y = i*(Math.PI/2)
-
-fan.add(blade)
-
-}
-
-CT.add(fan)
-
-CT.position.set(0,0,10)
-
-scene.add(CT)
-
+CT.position.set(0,0,10);
+scene.add(CT);
 
 // ----------------------
-// Pump Material (ประกาศครั้งเดียว)
+// PUMP MATERIAL
 // ----------------------
 
-const pumpMaterial = new THREE.MeshStandardMaterial({color:0x000000})
-
+const pumpMaterial = new THREE.MeshStandardMaterial({color:0x000000});
 
 // ----------------------
-// CDP Pump
+// CDP PUMP
 // ----------------------
-
-const CDP = new THREE.Group()
 
 const pumpCDP = new THREE.Mesh(
 new THREE.CylinderGeometry(0.7,0.7,2,32),
 pumpMaterial
-)
-
-pumpCDP.rotation.z = Math.PI/2
-
-CDP.add(pumpCDP)
-
-CDP.position.set(1,1,6)
-
-scene.add(CDP)
-
+);
+pumpCDP.position.set(1,1,6);
+scene.add(pumpCDP);
 
 // ----------------------
-// Chiller
+// CHILLER
 // ----------------------
 
-const CH = new THREE.Group()
-
-const body = new THREE.Mesh(
+const CH = new THREE.Mesh(
 new THREE.BoxGeometry(4,2,2),
 new THREE.MeshStandardMaterial({color:0xdddddd})
-)
-
-body.position.y = 1
-
-CH.add(body)
-
-const fanTop = new THREE.Group()
-
-fanTop.position.y = 2.2
-
-const fanBase = new THREE.Mesh(
-new THREE.CylinderGeometry(0.6,0.6,0.2,32),
-new THREE.MeshStandardMaterial({color:0x444444})
-)
-
-fanTop.add(fanBase)
-
-for(let i=0;i<4;i++){
-
-const blade = new THREE.Mesh(
-new THREE.BoxGeometry(1.2,0.1,0.2),
-new THREE.MeshStandardMaterial({color:0x222222})
-)
-
-blade.rotation.y = i*(Math.PI/2)
-
-fanTop.add(blade)
-
-}
-
-CH.add(fanTop)
-
-CH.position.set(0,0,0)
-
-scene.add(CH)
-
+);
+CH.position.set(0,1,0);
+scene.add(CH);
 
 // ----------------------
-// CHP Pump
+// CHP PUMP
 // ----------------------
-
-const CHP = new THREE.Group()
 
 const pumpCHP = new THREE.Mesh(
 new THREE.CylinderGeometry(0.7,0.7,2,32),
 pumpMaterial
-)
-
-pumpCHP.rotation.z = Math.PI/2
-
-CHP.add(pumpCHP)
-
-CHP.position.set(1,1,-6)
-
-scene.add(CHP)
-
+);
+pumpCHP.position.set(1,1,-6);
+scene.add(pumpCHP);
 
 // ----------------------
 // AHU
@@ -242,83 +148,75 @@ scene.add(CHP)
 const AHU = new THREE.Mesh(
 new THREE.BoxGeometry(3,1.5,2),
 new THREE.MeshStandardMaterial({color:0xff3333})
-)
-
-AHU.position.set(0,1,-10)
-
-scene.add(AHU)
-
+);
+AHU.position.set(0,1,-10);
+scene.add(AHU);
 
 // ----------------------
-// PIPE
+// PIPE FUNCTION
 // ----------------------
 
 function pipe(x,z1,z2,color){
 
-const length = Math.abs(z2-z1)
+const length = Math.abs(z2-z1);
 
 const pipe = new THREE.Mesh(
 new THREE.CylinderGeometry(0.2,0.2,length,16),
 new THREE.MeshStandardMaterial({color:color})
-)
+);
 
-pipe.rotation.x = Math.PI/2
+pipe.rotation.x = Math.PI/2;
+pipe.position.set(x,1,(z1+z2)/2);
 
-pipe.position.set(x,1,(z1+z2)/2)
-
-scene.add(pipe)
+scene.add(pipe);
 
 }
 
 // SUPPLY
-pipe(-1,10,6,0xff0000)
-pipe(-1,6,0,0xff0000)
-pipe(-1,0,-6,0xff0000)
-pipe(-1,-6,-10,0xff0000)
+pipe(-1,10,6,0xff0000);
+pipe(-1,6,0,0xff0000);
+pipe(-1,0,-6,0xff0000);
+pipe(-1,-6,-10,0xff0000);
 
 // RETURN
-pipe(1,-10,-6,0x00ffff)
-pipe(1,-6,0,0x00ffff)
-pipe(1,0,6,0x00ffff)
-pipe(1,6,10,0x00ffff)
+pipe(1,-10,-6,0x00ffff);
+pipe(1,-6,0,0x00ffff);
+pipe(1,0,6,0x00ffff);
+pipe(1,6,10,0x00ffff);
 
-
+// ----------------------
 // SYSTEM CONTROL
+// ----------------------
 
 function startSystem(){
-systemRun = true
+systemRun = true;
 }
 
 function stopSystem(){
-systemRun = false
+systemRun = false;
+pumpMaterial.color.set(0x000000);
 }
 
-
+// ----------------------
 // ANIMATION
+// ----------------------
 
 function animate(){
 
-requestAnimationFrame(animate)
+requestAnimationFrame(animate);
 
-controls.update()
+controls.update();
 
 if(systemRun){
 
-fan.rotation.y += 0.3
-fanTop.rotation.y += 0.2
+fan.rotation.y += 0.3;
 
-pumpCDP.rotation.x += 0.2
-pumpCHP.rotation.x += 0.2
+pumpMaterial.color.set(0x00ff00);
 
 }
 
-renderer.render(scene,camera)
+renderer.render(scene,camera);
 
 }
 
-animate()
-
-</script>
-
-</body>
-</html>
+animate();
