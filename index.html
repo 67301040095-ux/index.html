@@ -121,7 +121,7 @@ pump2.position.set(1,1,-6)
 scene.add(pump2)
 
 
- //BASE
+// BASE
 const base = new THREE.Mesh(
  new THREE.BoxGeometry(10,0.5,4),
  new THREE.MeshStandardMaterial({color:0xaaaaaa})
@@ -169,6 +169,17 @@ const screen = new THREE.Mesh(
 
 screen.position.set(3,1.5,0.55)
 scene.add(screen)
+
+
+// STATUS LIGHT
+const statusLight = new THREE.Mesh(
+ new THREE.SphereGeometry(0.25,16,16),
+ new THREE.MeshStandardMaterial({color:0xff0000})
+)
+
+statusLight.position.set(3,2.3,0)
+scene.add(statusLight)
+
 
 // AHU
 const ahu=new THREE.Mesh(
@@ -241,6 +252,7 @@ function startSystem(){
 
 systemRun=true
 pumpMaterial.color.set(0x00ff00)
+statusLight.material.color.set(0x00ff00)
 
 }
 
@@ -248,6 +260,7 @@ function stopSystem(){
 
 systemRun=false
 pumpMaterial.color.set(0x222222)
+statusLight.material.color.set(0xff0000)
 
 }
 
